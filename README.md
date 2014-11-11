@@ -3,6 +3,10 @@ QuizBowlChamps
 
 A classifier for answering quiz bowl questions
 
+Team
+===========
+Reed Anderson, Aaron Holt, Vahid Mazdeh, Ryan Milvenan
+
 Proposal
 ===========
 
