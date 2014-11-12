@@ -87,10 +87,14 @@ if __name__ == "__main__":
             
             # Append pos and oth for W_guess
             if max(W_guess, key=W_guess.get) == ii['Answer']:
-                feat[ii['Answer']] = True
+                # feat[ii['Answer']] = True
+                # feat['Sentence Position'] = feat[ii['Sentence Position']]
+                # feat['category'] = feat[ii['category']]
                 pos_test.append(feat)
             else:
-                feat[ii['Answer']] = False
+                # feat[ii['Answer']] = False
+                # feat['Sentence Position'] = feat[ii['Sentence Position']]
+                # feat['category'] = feat[ii['category']]
                 oth_test.append(feat)
 
             # # Append pos and oth for Q_guess
@@ -106,9 +110,13 @@ if __name__ == "__main__":
             # Append pos and oth for W_guess
             if max(W_guess, key=W_guess.get) == ii['Answer']:
                 feat[ii['Answer']] = True
+                # feat['Sentence Position'] = feat[ii['Sentence Position']]
+                # feat['category'] = feat[ii['category']]
                 pos_train.append(feat)
             else:
                 feat[ii['Answer']] = False
+                # feat['Sentence Position'] = feat[ii['Sentence Position']]
+                # feat['category'] = feat[ii['category']]
                 oth_train.append(feat)
 
             # # Append pos and oth for Q_guess
@@ -129,7 +137,7 @@ if __name__ == "__main__":
     classifier = nltk.classify.PositiveNaiveBayesClassifier.train(pos_train, oth_train)
     # classifier = nltk.classify.MaxentClassifier.train(dev_train, 'IIS', trace=3, max_iter=5)
 
-    # print pos_test[6]
+    # print pos_train[6]
     # test = pos_test[0]
     # print classifier.classify(test)
 
