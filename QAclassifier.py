@@ -8,10 +8,9 @@ from nltk.tokenize import RegexpTokenizer
 
 def word_filter(word):
     """
-    Simple stemmer
+    Simple stemmer and stop filter
     """
-    # Morphy returns the base form of a word, ie, dogs -> dog 
-    # unknown 'stem' returns word.lower()
+    
     stem = wn.morphy(word)
     stop = stopwords.words('english')
     if stem:
