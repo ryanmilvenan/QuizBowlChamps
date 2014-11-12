@@ -48,6 +48,8 @@ if __name__ == "__main__":
                         help='subsample this amount')
     args = parser.parse_args()
     
+
+    print "Initializing feature dictionaries ... "
     # Init and create feature extractor (you may want to modify this)
     fe = FeatureExtractor()
     
@@ -91,13 +93,13 @@ if __name__ == "__main__":
                 feat[ii['Answer']] = False
                 oth_test.append(feat)
 
-            # Append pos and oth for Q_guess
-            if max(Q_guess, key=Q_guess.get) == ii['Answer']:
-                feat[ii['Answer']] = True
-                pos_test.append(feat)
-            else:
-                feat[ii['Answer']] = False
-                oth_test.append(feat)
+            # # Append pos and oth for Q_guess
+            # if max(Q_guess, key=Q_guess.get) == ii['Answer']:
+            #     feat[ii['Answer']] = True
+            #     pos_test.append(feat)
+            # else:
+            #     feat[ii['Answer']] = False
+            #     oth_test.append(feat)
         
         else:
         
@@ -109,13 +111,13 @@ if __name__ == "__main__":
                 feat[ii['Answer']] = False
                 oth_train.append(feat)
 
-            # Append pos and oth for Q_guess
-            if max(Q_guess, key=Q_guess.get) == ii['Answer']:
-                feat[ii['Answer']] = True
-                pos_train.append(feat)
-            else:
-                feat[ii['Answer']] = False
-                oth_train.append(feat)
+            # # Append pos and oth for Q_guess
+            # if max(Q_guess, key=Q_guess.get) == ii['Answer']:
+            #     feat[ii['Answer']] = True
+            #     pos_train.append(feat)
+            # else:
+            #     feat[ii['Answer']] = False
+            #     oth_train.append(feat)
 
         # if max(W_guess, key=W_guess.get) == ii['Answer']:
         #     pos_full.append(W_guess)
