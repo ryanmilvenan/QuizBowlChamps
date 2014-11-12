@@ -1,6 +1,11 @@
 from collections import defaultdict
 from csv import DictReader, DictWriter
 
+import urllib
+import urllib2
+import json
+import re
+
 import nltk
 from nltk.corpus import wordnet as wn
 from nltk.corpus import stopwords
@@ -16,6 +21,30 @@ def word_filter(word):
     if stem:
         if stem.lower() not in stop:
             return stem.lower()
+
+# A function that associates an answer with its wikipedia article
+# text in the supplied dictionary.
+def wiki_grab(answer, wiki_dict):
+    url = 'http://en.wikipedia.org/w/api.php'
+    values = {'action': 'query',
+              'prop'  : 'extracts',
+              'titles': answer,
+              'rvprop': 'content',
+              'format': 'json'}
+    data = urllib.urlencode(values)
+    req = urllib2.Request(url, data)
+    response = urllib2.urlopen(req)
+    jsonRes = response.read()
+    textDict = json.loads(jsonRes)
+    page = textDict['query']['pages'].keys()
+    html = textDict['query']['pages'][page[0]]['extract']
+    text = remove_tags(html)
+    wiki_dict[answer] = text
+
+def remove_tags(raw_html):
+    cleanr =re.compile('<.*?>')
+    clean_text = re.sub(cleanr,'', raw_html)
+    return clean_text
 
 
 class FeatureExtractor:
@@ -150,6 +179,7 @@ if __name__ == "__main__":
         # print "Answer: ", max(ii, key=ii.get)
         if prediction == False:
             oth_right += 1
+
 
     right = pos_right + oth_right
     total = pos_total + oth_total
