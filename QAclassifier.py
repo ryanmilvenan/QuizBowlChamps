@@ -7,9 +7,8 @@ from nltk.tokenize import RegexpTokenizer
 
 class FeatureExtractor:
 	def __init__(self):
-		"""
-		You may want to add code here
-		"""
+
+		# Single dict for feature vector
 		self._d = defaultdict(float)
 
 	def score_dict(self, vals):
@@ -61,6 +60,7 @@ if __name__ == "__main__":
 
     	full_train.append((feat, ii['Answer']))
 
+    print dev_train[0]
     # Train a classifier
     print("Training classifier ...")
     classifier = nltk.classify.NaiveBayesClassifier.train(dev_train)
