@@ -60,6 +60,7 @@ i=0;
 dev_train = []
 dev_test = []
 full_train = []
+textFull = defaultdict(lambda: defaultdict(int))
 answer=[]
 
 #make a defaultdict of default dicts to store all data with answers
@@ -82,6 +83,9 @@ for ii in train2:
 		# print re.split(',',re.sub(':',',',re.sub(' ','',ii['QANTA Scores'])))
 		# print re.split(',',re.sub(':',',',re.sub(' ','',ii['IR_Wiki Scores'])))
 		# print re.split(',',re.sub(' ','',ii['QANTA Scores']))
+	words=re.split('\W+',ii['Question Text'].lower())
+	for kk in words:
+		textFull[kk][ii['Answer']]+=1
 	i+=1
 
 ##examples of how to access the dictionaries
@@ -105,6 +109,8 @@ totalScore=0.0
 totalScoreList={}
 totalScore2=0.0
 totalScoreList2={}
+
+pred={}
 
 
 for ii in train3:
@@ -159,10 +165,10 @@ for ii in train3:
 			# totalScore2=irScore+qScore*20
 			# totalScoreList2[answer]=totalScore2			
 
+		
 		#Calc final answer
 		if maxScore(totalScoreList)==ii['Answer']:
 			cCorrect+=1
-		# if maxScore(totalScoreList2)==ii['Answer']:
 		# 	cCorrect2+=1
 
 print "Accuracy with text = ", float(cCorrect)/float(totalQuestions)
@@ -174,10 +180,88 @@ print "Accuracy with text = ", float(cCorrect)/float(totalQuestions)
 
 
 
+test1 = DictReader(open("test.csv", 'r'))
+totalQuestions=0
+cCorrect=0
+cCorrect2=0
+i=0
+Q=[]
+QANTA={}
+qScore=0.0
+I=[]
+IR={}
+irScore=0.0
+textScore=0.0
+totalScore=0.0
+totalScoreList={}
+totalScore2=0.0
+totalScoreList2={}
+
+test={}
+
+
+for ii in test1:
+	totalQuestions+=1
+	qScore=0.0
+	textScoreQANTA=0.0
+	irScore=0.0
+	textScoreIR=0.0
+	answerSet=Set()
+	totalScoreList={}
+	Q=re.split(',',re.sub(',_','_',re.sub(':',',',re.sub(' ','',ii['QANTA Scores']))))
+	I=re.split(',',re.sub(',_','_',(re.sub(':',',',re.sub(' ','',ii['IR_Wiki Scores'])))))
+
+	# print I
+	# QANTA=re.split(',',re.sub(' ','',ii['QANTA Scores']))
+	#Use top 5 scores
+	for kk in range(0,20):
+		QANTA[Q[kk*2]]=Q[kk*2+1]
+		IR[I[kk*2]]=I[kk*2+1]
+
+	for kk in range(0,5):
+		answerSet.add(Q[kk*2])
+		answerSet.add(I[kk*2])
+		
+
+	for answer in answerSet:
+		# print answer
+		textScore=0.0
+
+		#Get QANTA and IR scores
+		try:
+			qScore=float(QANTA[answer])
+		except KeyError:
+			qScore=0.0
+		try:
+			irScore=float(IR[answer])
+		except KeyError:
+			irScore=0.0
+
+		#Get text score
+		for word in re.split('\W+',ii['Question Text'].lower()):
+			textScore+=text[word][answer]
+
+		
+		# print 'qScore=',qScore, 'irScore=',irScore, 'textScore=',textScore
+
+		##Scoring algorithm:
+		##with text = IR+QANTA*20+textscores/200, change as necessary
+		totalScore=irScore+qScore*20+textScore/200
+		totalScoreList[answer]=totalScore
+
+		# ##without text = IR+QANTA*20
+		# totalScore2=irScore+qScore*20
+		# totalScoreList2[answer]=totalScore2			
+	#Calc final answer
+	test[ii['Question ID']] = maxScore(totalScoreList)
+	# 	cCorrect2+=1
+
+
+
 
 
 # Write predictions
-# o = DictWriter(open('pred.csv', 'w'), ['id', 'pred'])
-# o.writeheader()
-# for ii in sorted(test):
-#     o.writerow({'id': ii, 'pred': test[ii]})
+o = DictWriter(open('pred.csv', 'w'), ['id', 'pred'])
+o.writeheader()
+for ii in sorted(test):
+    o.writerow({'id': ii, 'pred': test[ii]})
