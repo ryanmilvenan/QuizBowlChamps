@@ -22,7 +22,7 @@ def maxScore(d):
 
 ########### PART 1 : Training #########################
 #Fields:
-#Question, Question Text, QANTA Scores, Answer, Sentence Position, IR_Wiki Scores, category
+#Question ID, Question Text, QANTA Scores, Answer, Sentence Position, IR_Wiki Scores, category
 
 train = DictReader(open("train.csv", 'r'))
 
@@ -41,7 +41,6 @@ for ii in train:
 		text[kk][ii['Answer']]+=1
 
 ########## PART 2 : Run on test file ####################
-#Run the algorithm on test file
 testFile = DictReader(open("test.csv", 'r'))
 
 totalQuestions=0 #Total number of questions
@@ -63,9 +62,7 @@ test={}
 for ii in testFile:
 	totalQuestions+=1
 	qScore=0.0
-	textScoreQANTA=0.0
 	irScore=0.0
-	textScoreIR=0.0
 	answerSet=Set() #I put possible answers in a set to avoid duplicates
 	totalScoreList={}
 	Q=re.split(',',re.sub(',_','_',re.sub(':',',',re.sub(' ','',ii['QANTA Scores']))))
