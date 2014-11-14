@@ -89,14 +89,14 @@ if __name__ == "__main__":
             top_wiki_guess = max(W_guess, key=W_guess.get)
             if top_wiki_guess == ii['Answer']:
                 feat['top_wiki_guess'] = top_wiki_guess
-                # feat[ii['Answer']] = True
-                # feat['Sentence Position'] = feat[ii['Sentence Position']]
+                feat[ii['Answer']] = True
+                feat['Sentence Position'] = feat[ii['Sentence Position']]
                 # feat['category'] = feat[ii['category']]
                 pos_test.append(feat)
             else:
                 feat['top_wiki_guess'] = top_wiki_guess
-                # feat[ii['Answer']] = False
-                # feat['Sentence Position'] = feat[ii['Sentence Position']]
+                feat[ii['Answer']] = False
+                feat['Sentence Position'] = feat[ii['Sentence Position']]
                 # feat['category'] = feat[ii['category']]
                 oth_test.append(feat)
 
@@ -118,13 +118,13 @@ if __name__ == "__main__":
             if max(W_guess, key=W_guess.get) == ii['Answer']:
                 feat[ii['Answer']] = True
                 feat['top_wiki_guess'] = top_wiki_guess
-                # feat['Sentence Position'] = feat[ii['Sentence Position']]
+                feat['Sentence Position'] = feat[ii['Sentence Position']]
                 # feat['category'] = feat[ii['category']]
                 pos_train.append(feat)
             else:
                 feat[ii['Answer']] = False
                 feat['top_wiki_guess'] = top_wiki_guess
-                # feat['Sentence Position'] = feat[ii['Sentence Position']]
+                feat['Sentence Position'] = feat[ii['Sentence Position']]
                 # feat['category'] = feat[ii['category']]
                 oth_train.append(feat)
 
@@ -178,20 +178,36 @@ if __name__ == "__main__":
     right = pos_right + oth_right
     total = pos_total + oth_total
     print("Accuracy on dev: %f" % (float(right) / float(total)))
+    print("Accuracy on pos dev: %f" % (float(pos_right) / float(pos_total)))
+    print("Accuracy on oth dev: %f" % (float(oth_right) / float(oth_total)))
 
     # # Retrain on all data
-    # print("Training classifier on all training data...")
-    # classifier = nltk.classify.PositiveNaiveBayesClassifier.train((pos_test + pos_train),(oth_test + oth_train))
+    print("Training classifier on all training data...")
+    classifier = nltk.classify.PositiveNaiveBayesClassifier.train((pos_test + pos_train),(oth_test + oth_train))
     
     # # Read in test section
-    # test = {}
-    # for ii in DictReader(open("test.csv")):
-    #     # Read in max W_guess
-    #     feat = fe.text_features(ii['Question Text'])
-    #     test[ii['Question ID']] = classifier.classify(feat)
+    test = {}
+    for ii in DictReader(open("test.csv")):
+        # Read in max W_guess
+        feat = fe.text_features(ii['Question Text'])
+        feat['top_wiki_guess'] = top_wiki_guess
+        feat['Sentence Position'] = feat[ii['Sentence Position']]
+ 
+        ans_boolean = classifier.classify(feat)
+
+        Q_guess = fe.guess_dict(ii['QANTA Scores'])
+        top_qanta_guess = max(Q_guess, key=Q_guess.get)
+
+        W_guess = fe.guess_dict(ii['IR_Wiki Scores'])
+        top_wiki_guess = max(W_guess, key=W_guess.get)
+
+        if ans_boolean == True:
+            test[ii['Question ID']] = top_wiki_guess
+        elif ans_boolean == False:
+            test[ii['Question ID']] = top_qanta_guess
 
     # # Write predictions
-    # o = DictWriter(open('pred.csv', 'w'), ['id', 'pred'])
-    # o.writeheader()
-    # for ii in sorted(test):
-    #     o.writerow({'id': ii, 'pred': test[ii]})
+    o = DictWriter(open('pred.csv', 'w'), ['id', 'pred'])
+    o.writeheader()
+    for ii in sorted(test):
+        o.writerow({'id': ii, 'pred': test[ii]})
