@@ -52,16 +52,18 @@ for ii in train:
 	cTotal+=1
 # print fdist.most_common(100)
 # fdist.tabulate()
-print "Accuracy IR = ",float(cIR)/float(cTotal)
-print "Accuracy QANTA = ",float(cQ)/float(cTotal)
-print "QANTA or IR match and are correct = ",float(cEither)/float(cTotal)
-print "QANTA and IR match and are correct = ",float(match)/float(cTotal)
+print "Accuracy IR top pick = ",float(cIR)/float(cTotal)
+print "Accuracy QANTA top pick = ",float(cQ)/float(cTotal)
+print "QANTA or IR top pick match and are correct = ",float(cEither)/float(cTotal)
+print "QANTA and IR top pick match and are correct = ",float(match)/float(cTotal)
 
 
 
 
 ######################################################
 scoreInQANTAorIR=0.0
+scoreInTop5=0.0
+scoreInTop10=0.0
 train1 = DictReader(open("train.csv", 'r'))
 for ii in train1:
 
@@ -101,8 +103,18 @@ for ii in train1:
 		if (Q[kk*2]==ii['Answer']) or (I[kk*2]==ii['Answer']):
 			scoreInQANTAorIR+=1
 			break
-		
-print "Answer in any QANTA or IR options = ",float(scoreInQANTAorIR)/float(cTotal)
+	for kk in range(0,5):
+		if (Q[kk*2]==ii['Answer']) or (I[kk*2]==ii['Answer']):
+			scoreInTop5+=1
+			break
+	for kk in range(0,10):
+		if (Q[kk*2]==ii['Answer']) or (I[kk*2]==ii['Answer']):
+			scoreInTop10+=1
+			break
+
+print "Answer in any QANTA or IR top 5 = ",float(scoreInTop5)/float(cTotal)
+print "Answer in any QANTA or IR top 10 = ",float(scoreInTop10)/float(cTotal)
+print "Answer in any QANTA or IR options (top 20) = ",float(scoreInQANTAorIR)/float(cTotal)
 
 #######################################################
 train2 = DictReader(open("train.csv", 'r'))
