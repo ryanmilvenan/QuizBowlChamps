@@ -1,15 +1,14 @@
 from collections import defaultdict
 from csv import DictReader, DictWriter
 
-import urllib
-import urllib2
-import json
-import re
+import wiki_module as wiki
 
 import nltk
 from nltk.corpus import wordnet as wn
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
+
+import time
 
 def word_filter(word):
     """
@@ -21,31 +20,6 @@ def word_filter(word):
     if stem:
         if stem.lower() not in stop:
             return stem.lower()
-
-# A function that associates an answer with its wikipedia article
-# text in the supplied dictionary.
-def wiki_grab(answer, wiki_dict):
-    url = 'http://en.wikipedia.org/w/api.php'
-    values = {'action': 'query',
-              'prop'  : 'extracts',
-              'titles': answer,
-              'rvprop': 'content',
-              'format': 'json'}
-    data = urllib.urlencode(values)
-    req = urllib2.Request(url, data)
-    response = urllib2.urlopen(req)
-    jsonRes = response.read()
-    textDict = json.loads(jsonRes)
-    page = textDict['query']['pages'].keys()
-    html = textDict['query']['pages'][page[0]]['extract']
-    text = remove_tags(html)
-    wiki_dict[answer] = text
-
-def remove_tags(raw_html):
-    cleanr =re.compile('<.*?>')
-    clean_text = re.sub(cleanr,'', raw_html)
-    return clean_text
-
 
 class FeatureExtractor:
 	def __init__(self):
@@ -76,13 +50,13 @@ if __name__ == "__main__":
     parser.add_argument('--subsample', type=float, default=1.0,
                         help='subsample this amount')
     args = parser.parse_args()
-    
+
     # Init and create feature extractor (you may want to modify this)
     fe = FeatureExtractor()
     
     # Read in training data
     train = DictReader(open("train.csv", 'r'))
-    
+
     # Split off dev section
     pos_train = []
     oth_train = []
@@ -92,9 +66,33 @@ if __name__ == "__main__":
     
     # pos_full = []
     # oth_full = []
+    
+    # Pre-Process
+    # A list of all the question ids to be processed
+    print "Starting pre-processing stage..."
+    start = time.time()
 
+    question_ids = []
+
+    # A dictionary for holding predicted answers for each question
+    answers_for_question = {}
+
+    # A dictionary to hold the wikipedia article text for each answer of each question
+    wiki_texts = {}
+
+    # Retrieve wiki info
+    wiki.get_all_answers_for_questions(train, question_ids, answers_for_question)
+    wiki.retrieve_wikipedia_info_for_question_answers_textify(question_ids, answers_for_question, wiki_texts)
+
+
+
+    total_time = time.time() - start
+    print "Preprocessing completed in %0.5f seconds" % total_time
+        
+    train = DictReader(open("train.csv", 'r'))
     # Train 
     for ii in train:
+        print("Starting now...")
         if args.subsample < 1.0 and int(ii['Question ID']) % 100 > 100 * args.subsample:
             continue
 
@@ -168,6 +166,7 @@ if __name__ == "__main__":
 
     # Test for 'True' with positives
     for ii in pos_test:
+        print ii
         prediction = classifier.classify(ii)
         # print "Answer: ", max(ii, key=ii.get)
         if prediction == True:
