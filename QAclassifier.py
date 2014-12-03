@@ -50,7 +50,13 @@ if __name__ == "__main__":
     parser.add_argument('--subsample', type=float, default=1.0,
                         help='subsample this amount')
     args = parser.parse_args()
+<<<<<<< HEAD
 
+=======
+    
+
+    print "Initializing feature dictionaries ... "
+>>>>>>> master
     # Init and create feature extractor (you may want to modify this)
     fe = FeatureExtractor()
     
@@ -112,37 +118,45 @@ if __name__ == "__main__":
             
             # Append pos and oth for W_guess
             if max(W_guess, key=W_guess.get) == ii['Answer']:
-                feat[ii['Answer']] = True
+                # feat[ii['Answer']] = True
+                # feat['Sentence Position'] = feat[ii['Sentence Position']]
+                # feat['category'] = feat[ii['category']]
                 pos_test.append(feat)
             else:
-                feat[ii['Answer']] = False
+                # feat[ii['Answer']] = False
+                # feat['Sentence Position'] = feat[ii['Sentence Position']]
+                # feat['category'] = feat[ii['category']]
                 oth_test.append(feat)
 
-            # Append pos and oth for Q_guess
-            if max(Q_guess, key=Q_guess.get) == ii['Answer']:
-                feat[ii['Answer']] = True
-                pos_test.append(feat)
-            else:
-                feat[ii['Answer']] = False
-                oth_test.append(feat)
+            # # Append pos and oth for Q_guess
+            # if max(Q_guess, key=Q_guess.get) == ii['Answer']:
+            #     feat[ii['Answer']] = True
+            #     pos_test.append(feat)
+            # else:
+            #     feat[ii['Answer']] = False
+            #     oth_test.append(feat)
         
         else:
         
             # Append pos and oth for W_guess
             if max(W_guess, key=W_guess.get) == ii['Answer']:
                 feat[ii['Answer']] = True
+                # feat['Sentence Position'] = feat[ii['Sentence Position']]
+                # feat['category'] = feat[ii['category']]
                 pos_train.append(feat)
             else:
                 feat[ii['Answer']] = False
+                # feat['Sentence Position'] = feat[ii['Sentence Position']]
+                # feat['category'] = feat[ii['category']]
                 oth_train.append(feat)
 
-            # Append pos and oth for Q_guess
-            if max(Q_guess, key=Q_guess.get) == ii['Answer']:
-                feat[ii['Answer']] = True
-                pos_train.append(feat)
-            else:
-                feat[ii['Answer']] = False
-                oth_train.append(feat)
+            # # Append pos and oth for Q_guess
+            # if max(Q_guess, key=Q_guess.get) == ii['Answer']:
+            #     feat[ii['Answer']] = True
+            #     pos_train.append(feat)
+            # else:
+            #     feat[ii['Answer']] = False
+            #     oth_train.append(feat)
 
         # if max(W_guess, key=W_guess.get) == ii['Answer']:
         #     pos_full.append(W_guess)
@@ -154,7 +168,7 @@ if __name__ == "__main__":
     classifier = nltk.classify.PositiveNaiveBayesClassifier.train(pos_train, oth_train)
     # classifier = nltk.classify.MaxentClassifier.train(dev_train, 'IIS', trace=3, max_iter=5)
 
-    # print pos_test[6]
+    # print pos_train[6]
     # test = pos_test[0]
     # print classifier.classify(test)
 
