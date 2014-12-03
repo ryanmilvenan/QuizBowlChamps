@@ -34,24 +34,26 @@ match=0
 cTotal=0
 fdist=FreqDist()
 for ii in train:
-	either=0
-	#Check top value of QANTA and IR accuracy
-	if re.split(':',re.split(',',ii['IR_Wiki Scores'])[0])[0]==ii['Answer']:
-		cIR+=1
-		either+=1
+	if (ii['category']=='social'):
+		either=0
+		#Check top value of QANTA and IR accuracy
+		if re.split(':',re.split(',',ii['IR_Wiki Scores'])[0])[0]==ii['Answer']:
+			cIR+=1
+			either+=1
+			if re.split(':',re.split(',',ii['QANTA Scores'])[0])[0]==ii['Answer']:
+				match+=1
 		if re.split(':',re.split(',',ii['QANTA Scores'])[0])[0]==ii['Answer']:
-			match+=1
-	if re.split(':',re.split(',',ii['QANTA Scores'])[0])[0]==ii['Answer']:
-		cQ+=1
-		either+=1
-	if either>0:
-		cEither+=1
-	fdist[ii['Answer']]+=1
+			cQ+=1
+			either+=1
+		if either>0:
+			cEither+=1
+		fdist[ii['Answer']]+=1
 
 
-	cTotal+=1
+		cTotal+=1
 # print fdist.most_common(100)
 # fdist.tabulate()
+# print "cTotal = ",cTotal
 print "Accuracy IR top pick = ",float(cIR)/float(cTotal)
 print "Accuracy QANTA top pick = ",float(cQ)/float(cTotal)
 print "QANTA or IR top pick match and are correct = ",float(cEither)/float(cTotal)
@@ -60,61 +62,63 @@ print "QANTA and IR top pick match and are correct = ",float(match)/float(cTotal
 
 
 
-######################################################
-scoreInQANTAorIR=0.0
-scoreInTop5=0.0
-scoreInTop10=0.0
-train1 = DictReader(open("train.csv", 'r'))
-for ii in train1:
-
-	Q=[]
-	I=[]
-	counter=0 #This is used in case the first item has a comma before a :
-	#for example 'charles,_evans_hughes:5.03163689658' would mess up without it
-
-	#BUNCH OF DATA PROCESSING!
-	Q3=ii['QANTA Scores']
-	Q2=re.split(':',Q3)
-	for item in Q2:
-		if counter>0:
-			Q1=re.split(',',item,1) #split on first comma only!
-			for ele in Q1:
-				Q.append(re.sub(' ','',ele))
-		else:
-			Q.append(item)
-		counter=1
-	counter=0
-	# print Q
-	I3=ii['IR_Wiki Scores']
-	I2=re.split(':',I3)
-	for item in I2:
-		if counter>0:
-			I1=re.split(',',item,1) #split on first comma only!
-			for ele in I1:
-				I.append(re.sub(' ','',ele))
-		else:
-			I.append(item)
-		counter=1
+# ######################################################
+# scoreInQANTAorIR=0.0
+# scoreInTop5=0.0
+# scoreInTop10=0.0
+# train1 = DictReader(open("train.csv", 'r'))
+# for ii in train1:
+# 	if (ii['category']=='science'):
 
 
-	#Use top 5 scores
-	for kk in range(0,20):
+# 		Q=[]
+# 		I=[]
+# 		counter=0 #This is used in case the first item has a comma before a :
+# 		#for example 'charles,_evans_hughes:5.03163689658' would mess up without it
 
-		if (Q[kk*2]==ii['Answer']) or (I[kk*2]==ii['Answer']):
-			scoreInQANTAorIR+=1
-			break
-	for kk in range(0,5):
-		if (Q[kk*2]==ii['Answer']) or (I[kk*2]==ii['Answer']):
-			scoreInTop5+=1
-			break
-	for kk in range(0,10):
-		if (Q[kk*2]==ii['Answer']) or (I[kk*2]==ii['Answer']):
-			scoreInTop10+=1
-			break
+# 		#BUNCH OF DATA PROCESSING!
+# 		Q3=ii['QANTA Scores']
+# 		Q2=re.split(':',Q3)
+# 		for item in Q2:
+# 			if counter>0:
+# 				Q1=re.split(',',item,1) #split on first comma only!
+# 				for ele in Q1:
+# 					Q.append(re.sub(' ','',ele))
+# 			else:
+# 				Q.append(item)
+# 			counter=1
+# 		counter=0
+# 		# print Q
+# 		I3=ii['IR_Wiki Scores']
+# 		I2=re.split(':',I3)
+# 		for item in I2:
+# 			if counter>0:
+# 				I1=re.split(',',item,1) #split on first comma only!
+# 				for ele in I1:
+# 					I.append(re.sub(' ','',ele))
+# 			else:
+# 				I.append(item)
+# 			counter=1
 
-print "Answer in any QANTA or IR top 5 = ",float(scoreInTop5)/float(cTotal)
-print "Answer in any QANTA or IR top 10 = ",float(scoreInTop10)/float(cTotal)
-print "Answer in any QANTA or IR options (top 20) = ",float(scoreInQANTAorIR)/float(cTotal)
+
+# 		#Use top 5 scores
+# 		for kk in range(0,20):
+
+# 			if (Q[kk*2]==ii['Answer']) or (I[kk*2]==ii['Answer']):
+# 				scoreInQANTAorIR+=1
+# 				break
+# 		for kk in range(0,5):
+# 			if (Q[kk*2]==ii['Answer']) or (I[kk*2]==ii['Answer']):
+# 				scoreInTop5+=1
+# 				break
+# 		for kk in range(0,10):
+# 			if (Q[kk*2]==ii['Answer']) or (I[kk*2]==ii['Answer']):
+# 				scoreInTop10+=1
+# 				break
+
+# print "Answer in any QANTA or IR top 5 = ",float(scoreInTop5)/float(cTotal)
+# print "Answer in any QANTA or IR top 10 = ",float(scoreInTop10)/float(cTotal)
+# print "Answer in any QANTA or IR options (top 20) = ",float(scoreInQANTAorIR)/float(cTotal)
 
 #######################################################
 train2 = DictReader(open("train.csv", 'r'))
@@ -132,33 +136,41 @@ answer=[]
 # d['the']['carthage']+=1  increment dictionary carthage within
 # dictionary the by 1
 text = defaultdict(lambda: defaultdict(int))
-bigrams = defaultdict(lambda: defaultdict(int))
-trigrams = defaultdict(lambda: defaultdict(int))
+bigrams = defaultdict(lambda: defaultdict(int)) #of words
+trigrams = defaultdict(lambda: defaultdict(int)) #of letters
 words=[]
 bi=[]
+tri=[]
 
 for ii in train2:
 	# if i>0:
 	# 	break
-	if i%5!=0:
-		# word counter
-		#Split on everything that isn't alpha-numeric
-		words=re.split('\W+',ii['Question Text'].lower())
-		for kk in words:
-			text[kk][ii['Answer']]+=1
+	if int(ii['Question ID'])%5!=0:
+		if (ii['category']=='social'):
+			# word counter
+			#Split on everything that isn't alpha-numeric
+			words=re.split('\W+',ii['Question Text'].lower())
+			for kk in words:
+				stem = wn.morphy(kk)
+				if stem==None:
+					1
+				else:
+					text[stem][ii['Answer']]+=1
+				# text[kk][ii['Answer']]+=1
 
-		# bigrams of letters counter
-		bi=ngrams(ii['Question Text'].lower(),2)
-		for kk in bi:
-			bigrams[kk][ii['Answer']]+=1
+			# bigrams of words counter
+			bi=ngrams(nltk.word_tokenize(ii['Question Text'].lower()),2)
+			for kk in bi:
+				# print kk
+				bigrams[kk][ii['Answer']]+=1
 
-		# trigrams of letters counter
-		tri=ngrams(ii['Question Text'].lower(),3)
-		for kk in tri:
-			trigrams[kk][ii['Answer']]+=1
-		# print re.split(',',re.sub(':',',',re.sub(' ','',ii['QANTA Scores'])))
-		# print re.split(',',re.sub(':',',',re.sub(' ','',ii['IR_Wiki Scores'])))
-		# print re.split(',',re.sub(' ','',ii['QANTA Scores']))
+			# trigrams of letters counter
+			tri=ngrams(ii['Question Text'].lower(),3)
+			for kk in tri:
+				trigrams[kk][ii['Answer']]+=1
+			# print re.split(',',re.sub(':',',',re.sub(' ','',ii['QANTA Scores'])))
+			# print re.split(',',re.sub(':',',',re.sub(' ','',ii['IR_Wiki Scores'])))
+			# print re.split(',',re.sub(' ','',ii['QANTA Scores']))
 	# words=re.split('\W+',ii['Question Text'].lower())
 	# for kk in words:
 	# 	textFull[kk][ii['Answer']]+=1
@@ -184,109 +196,153 @@ biScore=0.0
 totalScore=0.0
 totalScoreList={}
 
-qWeight=50.0
-irWeight=0.08
-textWeight=1.0/50.0
-# textWeight=0
-biWeight=0.0000333333
-triWeight=0.00025
+#8160 total probs,1632
+#science: q=10.0,ir=0.02,text=1/1500,bi=0.00075,tri=0.00001,else=0,top 1 ans, 0.634
+#1055 probs,211 tested
 
+#lit: q=10,ir=1.2,text=1/100,bi=0.02,tri=0.001,else=0,top 1 ans, 0.78821
+#3097 probs,620 tested
+
+#history q=10.0,ir=1.2,bi=0.02,text=1/5000,tri=0.0001,else=0,top 1 ans, 0.87555
+#2379 probs,476
+
+#social: q=10,ir=0.02,text=1/1500,bi=0.03,tri=0.0001,top 2 ans, 0.59151
+#1629 probs,325 tested
+
+qWeight=10.0
+
+irWeight=0.02
+
+biWeight=0.03
+
+textWeight=1.0/1500.0
+
+triWeight=0.0001
+
+topAnswers=2
 
 for ii in train3:
 	# print ii['Question ID']
-	if i%5==0:
-		totalQuestions+=1
-		qScore=0.0
-		irScore=0.0
-		answerSet=Set()
-		totalScoreList={}
-		Q=[]
-		I=[]
-		counter=0 #This is used in case the first item has a comma before a :
-		#for example 'charles,_evans_hughes:5.03163689658' would mess up without it
+	if int(ii['Question ID'])%5==0:
+		if ii['category']=='social':
+			totalQuestions+=1
+			qScore=0.0
+			irScore=0.0
+			answerSet=Set()
+			totalScoreList={}
+			Q=[]
+			I=[]
+			counter=0 #This is used in case the first item has a comma before a :
+			#for example 'charles,_evans_hughes:5.03163689658' would mess up without it
 
-		#BUNCH OF DATA PROCESSING!
-		Q3=ii['QANTA Scores']
-		Q2=re.split(':',Q3)
-		for item in Q2:
-			if counter>0:
-				Q1=re.split(',',item,1) #split on first comma only!
-				for ele in Q1:
-					Q.append(re.sub(' ','',ele))
-			else:
-				Q.append(item)
-			counter=1
-		counter=0
-		# print Q
-		I3=ii['IR_Wiki Scores']
-		I2=re.split(':',I3)
-		for item in I2:
-			if counter>0:
-				I1=re.split(',',item,1) #split on first comma only!
-				for ele in I1:
-					I.append(re.sub(' ','',ele))
-			else:
-				I.append(item)
-			counter=1
+			#BUNCH OF DATA PROCESSING!
+			Q3=ii['QANTA Scores']
+			Q2=re.split(':',Q3)
+			for item in Q2:
+				if counter>0:
+					Q1=re.split(',',item,1) #split on first comma only!
+					for ele in Q1:
+						Q.append(re.sub(' ','',ele))
+				else:
+					Q.append(item)
+				counter=1
+			counter=0
+			# print Q
+			I3=ii['IR_Wiki Scores']
+			I2=re.split(':',I3)
+			for item in I2:
+				if counter>0:
+					I1=re.split(',',item,1) #split on first comma only!
+					for ele in I1:
+						I.append(re.sub(' ','',ele))
+				else:
+					I.append(item)
+				counter=1
 
 
-		#Use top 5 scores
-		for kk in range(0,20):
-			QANTA[Q[kk*2]]=Q[kk*2+1]
-			IR[I[kk*2]]=I[kk*2+1]
+			#Use top 5 scores
+			for kk in range(0,20):
+				QANTA[Q[kk*2]]=Q[kk*2+1]
+				IR[I[kk*2]]=I[kk*2+1]
 
-		for kk in range(0,1):
-			answerSet.add(Q[kk*2])
-			answerSet.add(I[kk*2])
-			
+			for kk in range(0,topAnswers):
+				answerSet.add(Q[kk*2])
+				answerSet.add(I[kk*2])
+				
 
-		for answer in answerSet:
-			# print answer
-			textScore=0.0
-			biScore=0.0
-			triScore=0.0
+			for answer in answerSet:
+				# print answer
+				textScore=0.0
+				biScore=0.0
+				triScore=0.0
 
-			#Get QANTA and IR scores
-			try:
-				qScore=float(QANTA[answer])
-			except KeyError:
-				qScore=0.0
-			try:
-				irScore=float(IR[answer])
-			except KeyError:
-				irScore=0.0
+				#Get QANTA and IR scores
+				try:
+					qScore=float(QANTA[answer])
+				except KeyError:
+					qScore=0.0
+				try:
+					irScore=float(IR[answer])
+				except KeyError:
+					irScore=0.0
 
-			#Get text score
-			for word in re.split('\W+',ii['Question Text'].lower()):
-				textScore+=text[word][answer]
+				#Get text score
+				words=re.split('\W+',ii['Question Text'].lower())
+				for kk in words:
+					stem = wn.morphy(kk)
+					# print stem
+					if stem==None:
+						1
+					else:
+						textScore+=text[stem][answer]
+						# print 'HAHAHAHAAHAHHAHAHAAH'
 
-			#Get bigrams score
-			for gram in ngrams(ii['Question Text'].lower(),2):
-				biScore+=bigrams[gram][answer]
+				# for word in re.split('\W+',ii['Question Text'].lower()):
+				# 	stem = wn.morphy(word)
+				# 	print stem
+    # 				if stem!='None':
+    # 					print 'HAHAHAAHAHAHAAHAHAHAAHAHAHAAHAHAHAA'
+    # 				else:
+				# 		textScore+=text[stem][answer]
+				# 		print "MADE IT MADE IT MADE IT MADE IT MADE IT"
+					# textScore+=text[word][answer]
 
-			#Get bigrams score
-			for gram in ngrams(ii['Question Text'].lower(),3):
-				triScore+=trigrams[gram][answer]
+				#Get bigrams score
+				for gram in ngrams(nltk.word_tokenize(ii['Question Text'].lower()),2):
+					biScore+=bigrams[gram][answer]
 
-			# print 'qScore=',qScore*qWeight, 'irScore=',irScore*irWeight, 'textScore=',textScore*textWeight, "biScore=", biScore*biWeight
-			# print 'qScore=',qScore, 'irScore=',irScore, 'textScore=',textScore, "biScore=", biScore
+				#Get trigrams score
+				for gram in ngrams(ii['Question Text'].lower(),3):
+					triScore+=trigrams[gram][answer]
 
-			##Scoring algorithm:
-			##with text = IR*w1+QANTA*w2+textscores*w3+bigram*w4
-			totalScore=irScore*irWeight+qScore*qWeight+textScore*textWeight+biScore*biWeight+triScore*triWeight
-			# totalScore=irScore*irWeight+qScore*qWeight+textScore*textWeight
-			# totalScore=irScore*irWeight+qScore*qWeight
-			totalScoreList[answer]=totalScore
+				# print 'qScore=',qScore*qWeight, 'irScore=',irScore*irWeight, 'textScore=',textScore*textWeight, "biScore=", biScore*biWeight
+				# print 'qScore=',qScore, 'irScore=',irScore, 'textScore=',textScore, "biScore=", biScore
+
+				##Scoring algorithm:
+				##with text = IR*w1+QANTA*w2+textscores*w3+bigram*w4
+				totalScore=irScore*irWeight+qScore*qWeight+textScore*textWeight+biScore*biWeight+triScore*triWeight
+				# totalScore=irScore*irWeight+qScore*qWeight+textScore*textWeight
+				# totalScore=irScore*irWeight+qScore*qWeight
+				totalScoreList[answer]=totalScore
 
 		
-		#Calc final answer
-		if maxScore(totalScoreList)==ii['Answer']:
-			cCorrect+=1
-		# else:
-			# print maxScore(totalScoreList), ii['Answer']
+			#Calc final answer
+			if maxScore(totalScoreList)==ii['Answer']:
+				cCorrect+=1
+			# print ii['Question ID'],maxScore(totalScoreList), ii['Answer']
+			# test[ii['Question ID']]=maxScore(totalScoreList)
+			# else:
+			# 	print maxScore(totalScoreList), ii['Answer']
 	i+=1
 
+print "totalQuestion = ",totalQuestions
 print "Accuracy with text = ", float(cCorrect)/float(totalQuestions)
 
+
+# # Write predictions
+# o = DictWriter(open('pred3.csv', 'wb'), ['Question ID', 'Answer'])
+# o.writeheader()
+# for ii in sorted(test):
+#     o.writerow({'Question ID': ii, 'Answer': test[ii]})
 
 

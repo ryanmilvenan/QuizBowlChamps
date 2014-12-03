@@ -30,15 +30,28 @@ train = DictReader(open("train.csv", 'r'))
 # d['the']['carthage']+=1  increment dictionary carthage within
 # dictionary the by 1
 text = defaultdict(lambda: defaultdict(int))
+bigrams = defaultdict(lambda: defaultdict(int))
+trigrams = defaultdict(lambda: defaultdict(int))
 words=[]
 
 #New features can be inserted and trained in this loop
 for ii in train:
 	#Split on everything that isn't alpha-numeric
 	words=re.split('\W+',ii['Question Text'].lower())
+
 	#Associate words with the correct answer
 	for kk in words:
 		text[kk][ii['Answer']]+=1
+
+	# bigrams of letters counter
+	bi=ngrams(ii['Question Text'].lower(),2)
+	for kk in bi:
+		bigrams[kk][ii['Answer']]+=1
+
+	# trigrams of letters counter
+	tri=ngrams(ii['Question Text'].lower(),3)
+	for kk in tri:
+		trigrams[kk][ii['Answer']]+=1
 
 ########## PART 2 : Run on test file ####################
 testFile = DictReader(open("test.csv", 'r'))
@@ -52,10 +65,18 @@ IR={} #Then I associate the keys(answers) with the values(scores)
 irScore=0.0 #IR score for given answer
 textScore=0.0 #Score for simple counter
 totalScore=0.0 #Score of all features*weights for a given answer
+biScore=0.0
+triScore=0.0
 #Dictionary containing the scores of all possible answers
 totalScoreList={}
 #Dictionary to store question id and associated answer
 test={}
+
+qWeight=50.0
+irWeight=0.08
+textWeight=1.0/50.0
+biWeight=0.0000333333
+triWeight=0.00025
 
 
 
@@ -65,8 +86,34 @@ for ii in testFile:
 	irScore=0.0
 	answerSet=Set() #I put possible answers in a set to avoid duplicates
 	totalScoreList={}
-	Q=re.split(',',re.sub(',_','_',re.sub(':',',',re.sub(' ','',ii['QANTA Scores']))))
-	I=re.split(',',re.sub(',_','_',(re.sub(':',',',re.sub(' ','',ii['IR_Wiki Scores'])))))
+	Q=[]
+	I=[]
+	counter=0 #This is used in case the first item has a comma before a :
+	#for example 'charles,_evans_hughes:5.03163689658' would mess up without it
+
+	#BUNCH OF DATA PROCESSING!
+	Q3=ii['QANTA Scores']
+	Q2=re.split(':',Q3)
+	for item in Q2:
+		if counter>0:
+			Q1=re.split(',',item,1) #split on first comma only!
+			for ele in Q1:
+				Q.append(re.sub(' ','',ele))
+		else:
+			Q.append(item)
+		counter=1
+	counter=0
+	# print Q
+	I3=ii['IR_Wiki Scores']
+	I2=re.split(':',I3)
+	for item in I2:
+		if counter>0:
+			I1=re.split(',',item,1) #split on first comma only!
+			for ele in I1:
+				I.append(re.sub(' ','',ele))
+		else:
+			I.append(item)
+		counter=1
 
 	
 	for kk in range(0,20):
@@ -74,7 +121,7 @@ for ii in testFile:
 		IR[I[kk*2]]=I[kk*2+1]
 
 	#Use top 5 scores
-	for kk in range(0,5):
+	for kk in range(0,1):
 		answerSet.add(Q[kk*2])
 		answerSet.add(I[kk*2])
 		
@@ -96,11 +143,18 @@ for ii in testFile:
 		#Get text score
 		for word in re.split('\W+',ii['Question Text'].lower()):
 			textScore+=text[word][answer]
-		# print 'qScore=',qScore, 'irScore=',irScore, 'textScore=',textScore
+
+		#Get bigrams score
+		for gram in ngrams(ii['Question Text'].lower(),2):
+			biScore+=bigrams[gram][answer]
+
+		#Get trigrams score
+		for gram in ngrams(ii['Question Text'].lower(),3):
+			triScore+=trigrams[gram][answer]
 
 		##Scoring algorithm:
-		##with text = IR+QANTA*2+textscores/200, change as necessary
-		totalScore=irScore+qScore*2+textScore/200
+		##with text = ir*irweight+qanta*qantaweight+text*textweight+...feature*featureweight
+		totalScore=irScore*irWeight+qScore*qWeight+textScore*textWeight+biScore*biWeight+triScore*triWeight
 		#Put score for specific answer in dictionary
 		totalScoreList[answer]=totalScore	
 
@@ -108,7 +162,7 @@ for ii in testFile:
 	test[ii['Question ID']]=maxScore(totalScoreList)
 
 # Write predictions
-o = DictWriter(open('pred.csv', 'wb'), ['id', 'pred'])
+o = DictWriter(open('pred1.csv', 'wb'), ['Question ID', 'Answer'])
 o.writeheader()
 for ii in sorted(test):
-    o.writerow({'id': ii, 'pred': test[ii]})
+    o.writerow({'Question ID': ii, 'Answer': test[ii]})
