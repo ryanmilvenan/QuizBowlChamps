@@ -1,11 +1,13 @@
 QuizBowlChamps
 ==============
 
-A classifier for answering quiz bowl questions
+A classifier for answering quiz bowl questions. 
 
 Team
 ===========
 Reed Anderson, Aaron Holt, Vahid Mazdeh, Ryan Milvenan
+
+(Ranking at [InClass Kaggle](http://inclass.kaggle.com/c/when-to-buzz/leaderboard "InClass Kaggle") under 'Quiz Bowl Champs'. )
 
 Proposal
 ===========
