@@ -2,21 +2,18 @@ import urllib
 import urllib2
 import json
 import re
+from csv import DictWriter
 
 import nltk
 from nltk.corpus import wordnet as wn
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
 
-import timer
-
 def retrieve_wikipedia_info_for_question_answers_textify(question_ids, answers_dictionary, wiki_texts):
-    timer = Timer()
     wiki_data = {}
     for q_id in question_ids:
         wiki_texts[q_id] = {}
         answers_for_this_question = answers_dictionary[q_id]
-        times = []
         for answer in answers_for_this_question:
             found = wiki_data.get(answer, False)
             if not found:
@@ -28,15 +25,12 @@ def retrieve_wikipedia_info_for_question_answers_textify(question_ids, answers_d
                 page_exists = wiki_data.get(answer, False)
                 if page_exists:
                     wiki_texts[q_id][answer] = wiki_data[answer]
-        timer.calculate
 
 def retrieve_wikipedia_info_for_question_answers(question_ids, answers_dictionary, wiki_texts):
-    timer = Timer()
     wiki_data = {}
     for q_id in question_ids:
         wiki_texts[q_id] = {}
         answers_for_this_question = answers_dictionary[q_id]
-        times = []
         for answer in answers_for_this_question:
             found = wiki_data.get(answer, False)
             if not found:
@@ -48,7 +42,6 @@ def retrieve_wikipedia_info_for_question_answers(question_ids, answers_dictionar
                 page_exists = wiki_data.get(answer, False)
                 if page_exists:
                     wiki_texts[q_id][answer] = wiki_data[answer]
-        timer.calculate
 
 # A function that associates an answer with its wikipedia article
 # text in the supplied dictionary.
@@ -156,3 +149,10 @@ def words_in_common(wiki_text, question_text):
 
 def bigrams_in_common(wiki_text, question_text):
     print wiki_text.collocations()
+
+def write_articles_to_file(wiki_texts):
+    o = DictWriter(open('articles.csv', 'w'), ['answer', 'text'])
+    o.writeheader()
+    for article in wiki_texts:
+        o.writerow({'answer':article, 'text':wiki_texts[article]})
+
