@@ -27,37 +27,37 @@ def maxScore(d):
 ################################################################
 ## This section just uses the top score of each answer generator as
 ## the answer we're submitting
-cIR=0
-cQ=0
-cEither=0
-match=0
-cTotal=0
-fdist=FreqDist()
-for ii in train:
-	if (ii['category']=='social'):
-		either=0
-		#Check top value of QANTA and IR accuracy
-		if re.split(':',re.split(',',ii['IR_Wiki Scores'])[0])[0]==ii['Answer']:
-			cIR+=1
-			either+=1
-			if re.split(':',re.split(',',ii['QANTA Scores'])[0])[0]==ii['Answer']:
-				match+=1
-		if re.split(':',re.split(',',ii['QANTA Scores'])[0])[0]==ii['Answer']:
-			cQ+=1
-			either+=1
-		if either>0:
-			cEither+=1
-		fdist[ii['Answer']]+=1
+# cIR=0
+# cQ=0
+# cEither=0
+# match=0
+# cTotal=0
+# fdist=FreqDist()
+# for ii in train:
+# 	if (ii['category']=='social'):
+# 		either=0
+# 		#Check top value of QANTA and IR accuracy
+# 		if re.split(':',re.split(',',ii['IR_Wiki Scores'])[0])[0]==ii['Answer']:
+# 			cIR+=1
+# 			either+=1
+# 			if re.split(':',re.split(',',ii['QANTA Scores'])[0])[0]==ii['Answer']:
+# 				match+=1
+# 		if re.split(':',re.split(',',ii['QANTA Scores'])[0])[0]==ii['Answer']:
+# 			cQ+=1
+# 			either+=1
+# 		if either>0:
+# 			cEither+=1
+# 		fdist[ii['Answer']]+=1
 
 
-		cTotal+=1
-# print fdist.most_common(100)
-# fdist.tabulate()
-# print "cTotal = ",cTotal
-print "Accuracy IR top pick = ",float(cIR)/float(cTotal)
-print "Accuracy QANTA top pick = ",float(cQ)/float(cTotal)
-print "QANTA or IR top pick match and are correct = ",float(cEither)/float(cTotal)
-print "QANTA and IR top pick match and are correct = ",float(match)/float(cTotal)
+# 		cTotal+=1
+# # print fdist.most_common(100)
+# # fdist.tabulate()
+# # print "cTotal = ",cTotal
+# print "Accuracy IR top pick = ",float(cIR)/float(cTotal)
+# print "Accuracy QANTA top pick = ",float(cQ)/float(cTotal)
+# print "QANTA or IR top pick match and are correct = ",float(cEither)/float(cTotal)
+# print "QANTA and IR top pick match and are correct = ",float(match)/float(cTotal)
 
 
 
@@ -141,12 +141,15 @@ trigrams = defaultdict(lambda: defaultdict(int)) #of letters
 words=[]
 bi=[]
 tri=[]
+correctAnswerSet=Set()
 
 for ii in train2:
 	# if i>0:
 	# 	break
+	# correctAnswerSet.add(ii['Answer'])
 	if int(ii['Question ID'])%5!=0:
-		if (ii['category']=='social'):
+		if (ii['category']=='history'):
+			correctAnswerSet.add(ii['Answer'])
 			# word counter
 			#Split on everything that isn't alpha-numeric
 			words=re.split('\W+',ii['Question Text'].lower())
@@ -184,6 +187,7 @@ for ii in train2:
 train3 = DictReader(open("train.csv", 'r'))
 totalQuestions=0
 cCorrect=0
+inAnswerSet=0
 i=0
 Q=[]
 QANTA={}
@@ -196,35 +200,50 @@ biScore=0.0
 totalScore=0.0
 totalScoreList={}
 
+
+zeroToFour=0.0
+fourToEight=0.0
+eightToTwelve=0.0
+twelvePlus=0.0
+
+zeroToFourTotal=0.0
+fourToEightTotal=0.0
+eightToTwelveTotal=0.0
+twelvePlusTotal=0.0
+
+
 #8160 total probs,1632
-#science: q=10.0,ir=0.02,text=1/1500,bi=0.00075,tri=0.00001,else=0,top 1 ans, 0.634
+#science: q=10.0,ir=0.02,text=1/1500,bi=0.00075,tri=0.00001,ias=2,nias=-1,top 3 ans, 0.66341
 #1055 probs,211 tested
 
-#lit: q=10,ir=1.2,text=1/100,bi=0.02,tri=0.001,else=0,top 1 ans, 0.78821
+#lit: q=10,ir=1.2,text=1/5000,bi=0.02,tri=0.001,ias=0,nias=0,top 1 ans, 0.77388
 #3097 probs,620 tested
 
-#history q=10.0,ir=1.2,bi=0.02,text=1/5000,tri=0.0001,else=0,top 1 ans, 0.87555
+#history q=10.0,ir=1.2,bi=0.02,text=1/2000,tri=0.0001,else=0,top 1 ans, 0.86666
 #2379 probs,476
 
-#social: q=10,ir=0.02,text=1/1500,bi=0.03,tri=0.0001,top 2 ans, 0.59151
+#social: q=10,ir=0.02,text=1/1500,bi=0.03,tri=0.0001,ias=2,nias=-1,top 2 ans, 0.62068
 #1629 probs,325 tested
 
 qWeight=10.0
 
-irWeight=0.02
+irWeight=1.2
 
-biWeight=0.03
+biWeight=0.02
 
-textWeight=1.0/1500.0
+textWeight=1.0/2000.0
 
-triWeight=0.0001
+triWeight=0.001
 
-topAnswers=2
+inCorrectAnswerSet=0
+notInCorrectAnswerSet=0
+
+topAnswers=1
 
 for ii in train3:
 	# print ii['Question ID']
 	if int(ii['Question ID'])%5==0:
-		if ii['category']=='social':
+		if ii['category']=='history':
 			totalQuestions+=1
 			qScore=0.0
 			irScore=0.0
@@ -268,6 +287,8 @@ for ii in train3:
 			for kk in range(0,topAnswers):
 				answerSet.add(Q[kk*2])
 				answerSet.add(I[kk*2])
+			# for kk in correctAnswerSet:
+			# 	answerSet.add(kk)
 				
 
 			for answer in answerSet:
@@ -315,20 +336,60 @@ for ii in train3:
 				for gram in ngrams(ii['Question Text'].lower(),3):
 					triScore+=trigrams[gram][answer]
 
+				if (answer in correctAnswerSet):
+					answerSetScore=inCorrectAnswerSet
+				else:
+					answerSetScore=notInCorrectAnswerSet
+
 				# print 'qScore=',qScore*qWeight, 'irScore=',irScore*irWeight, 'textScore=',textScore*textWeight, "biScore=", biScore*biWeight
 				# print 'qScore=',qScore, 'irScore=',irScore, 'textScore=',textScore, "biScore=", biScore
 
 				##Scoring algorithm:
 				##with text = IR*w1+QANTA*w2+textscores*w3+bigram*w4
-				totalScore=irScore*irWeight+qScore*qWeight+textScore*textWeight+biScore*biWeight+triScore*triWeight
+				totalScore=answerSetScore+irScore*irWeight+qScore*qWeight+textScore*textWeight+biScore*biWeight+triScore*triWeight
 				# totalScore=irScore*irWeight+qScore*qWeight+textScore*textWeight
 				# totalScore=irScore*irWeight+qScore*qWeight
 				totalScoreList[answer]=totalScore
 
 		
 			#Calc final answer
-			if maxScore(totalScoreList)==ii['Answer']:
+			pickedAnswer=maxScore(totalScoreList)
+			# print totalScoreList[pickedAnswer]
+			# if pickedAnswer==ii['Answer']:
+			# 	cCorrect+=1
+			if pickedAnswer==ii['Answer']:
 				cCorrect+=1
+			if (ii['Answer'] in correctAnswerSet):
+				inAnswerSet+=1
+
+			#####STATS BASED ON SCORE#####
+			if pickedAnswer==ii['Answer']:
+				if totalScoreList[pickedAnswer]<=4:
+					zeroToFour+=1
+				if totalScoreList[pickedAnswer]<=8 and totalScoreList[pickedAnswer]>4:
+					fourToEight+=1
+				if totalScoreList[pickedAnswer]<=12 and totalScoreList[pickedAnswer]>8:
+					eightToTwelve+=1
+				if totalScoreList[pickedAnswer]>12:
+					twelvePlus+=1
+
+			if totalScoreList[pickedAnswer]<=4:
+				zeroToFourTotal+=1
+			if totalScoreList[pickedAnswer]<=8 and totalScoreList[pickedAnswer]>4:
+				fourToEightTotal+=1
+			if totalScoreList[pickedAnswer]<=12 and totalScoreList[pickedAnswer]>8:
+				eightToTwelveTotal+=1
+			if totalScoreList[pickedAnswer]>12:
+				twelvePlusTotal+=1
+
+			# if totalScoreList[pickedAnswer]<=4:
+			# 	pickedAnswer=Q[0]
+
+			# else:
+			# 	totalScoreList[pickedAnswer]=0
+			# 	pickedAnswer=maxScore(totalScoreList)
+			# 	if pickedAnswer==ii['Answer']:
+			# 		cCorrect+=1
 			# print ii['Question ID'],maxScore(totalScoreList), ii['Answer']
 			# test[ii['Question ID']]=maxScore(totalScoreList)
 			# else:
@@ -337,6 +398,12 @@ for ii in train3:
 
 print "totalQuestion = ",totalQuestions
 print "Accuracy with text = ", float(cCorrect)/float(totalQuestions)
+# print len(correctAnswerSet)
+print "In Answer Set? ", inAnswerSet, inAnswerSet/float(totalQuestions)
+# print "zero to four =" ,zeroToFour/zeroToFourTotal, zeroToFourTotal/totalQuestions
+# print "four to eight = ", fourToEight/fourToEightTotal, fourToEightTotal/totalQuestions
+print "eightToTwelve =", eightToTwelve/eightToTwelveTotal, eightToTwelveTotal/totalQuestions
+print "twelvePlus =", twelvePlus/twelvePlusTotal, twelvePlusTotal/totalQuestions
 
 
 # # Write predictions
