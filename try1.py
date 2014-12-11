@@ -7,11 +7,14 @@ from sets import Set
 
 import re
 import nltk
+from nltk.corpus import stopwords
 from nltk import FreqDist
 from nltk.corpus import wordnet as wn
 from nltk.tokenize import TreebankWordTokenizer
 from nltk.classify import PositiveNaiveBayesClassifier
 from nltk.util import ngrams
+
+stop = stopwords.words('english')
 
 train = DictReader(open("train.csv", 'r'))
 #Fields:
@@ -25,39 +28,39 @@ def maxScore(d):
 	return k[v.index(max(v))]
 
 ################################################################
-## This section just uses the top score of each answer generator as
-## the answer we're submitting
-# cIR=0
-# cQ=0
-# cEither=0
-# match=0
-# cTotal=0
-# fdist=FreqDist()
-# for ii in train:
-# 	if (ii['category']=='social'):
-# 		either=0
-# 		#Check top value of QANTA and IR accuracy
-# 		if re.split(':',re.split(',',ii['IR_Wiki Scores'])[0])[0]==ii['Answer']:
-# 			cIR+=1
-# 			either+=1
-# 			if re.split(':',re.split(',',ii['QANTA Scores'])[0])[0]==ii['Answer']:
-# 				match+=1
-# 		if re.split(':',re.split(',',ii['QANTA Scores'])[0])[0]==ii['Answer']:
-# 			cQ+=1
-# 			either+=1
-# 		if either>0:
-# 			cEither+=1
-# 		fdist[ii['Answer']]+=1
+# This section just uses the top score of each answer generator as
+# the answer we're submitting
+cIR=0
+cQ=0
+cEither=0
+match=0
+cTotal=0
+fdist=FreqDist()
+for ii in train:
+	if (ii['category']=='science'):
+		either=0
+		#Check top value of QANTA and IR accuracy
+		if re.split(':',re.split(',',ii['IR_Wiki Scores'])[0])[0]==ii['Answer']:
+			cIR+=1
+			either+=1
+			if re.split(':',re.split(',',ii['QANTA Scores'])[0])[0]==ii['Answer']:
+				match+=1
+		if re.split(':',re.split(',',ii['QANTA Scores'])[0])[0]==ii['Answer']:
+			cQ+=1
+			either+=1
+		if either>0:
+			cEither+=1
+		fdist[ii['Answer']]+=1
 
 
-# 		cTotal+=1
-# # print fdist.most_common(100)
-# # fdist.tabulate()
-# # print "cTotal = ",cTotal
-# print "Accuracy IR top pick = ",float(cIR)/float(cTotal)
-# print "Accuracy QANTA top pick = ",float(cQ)/float(cTotal)
-# print "QANTA or IR top pick match and are correct = ",float(cEither)/float(cTotal)
-# print "QANTA and IR top pick match and are correct = ",float(match)/float(cTotal)
+		cTotal+=1
+# print fdist.most_common(100)
+# fdist.tabulate()
+# print "cTotal = ",cTotal
+print "Accuracy IR top pick = ",float(cIR)/float(cTotal)
+print "Accuracy QANTA top pick = ",float(cQ)/float(cTotal)
+print "QANTA or IR top pick match and are correct = ",float(cEither)/float(cTotal)
+print "QANTA and IR top pick match and are correct = ",float(match)/float(cTotal)
 
 
 
@@ -135,9 +138,9 @@ answer=[]
 #make a defaultdict of default dicts to store all data with answers
 # d['the']['carthage']+=1  increment dictionary carthage within
 # dictionary the by 1
-text = defaultdict(lambda: defaultdict(int))
-bigrams = defaultdict(lambda: defaultdict(int)) #of words
-trigrams = defaultdict(lambda: defaultdict(int)) #of letters
+text = defaultdict(lambda: defaultdict(float))
+bigrams = defaultdict(lambda: defaultdict(float)) #of words
+trigrams = defaultdict(lambda: defaultdict(float)) #of letters
 words=[]
 bi=[]
 tri=[]
@@ -148,7 +151,7 @@ for ii in train2:
 	# 	break
 	# correctAnswerSet.add(ii['Answer'])
 	if int(ii['Question ID'])%5!=0:
-		if (ii['category']=='history'):
+		if (ii['category']=='science'):
 			correctAnswerSet.add(ii['Answer'])
 			# word counter
 			#Split on everything that isn't alpha-numeric
@@ -158,7 +161,8 @@ for ii in train2:
 				if stem==None:
 					1
 				else:
-					text[stem][ii['Answer']]+=1
+					if kk not in stop:
+						text[stem][ii['Answer']]+=1
 				# text[kk][ii['Answer']]+=1
 
 			# bigrams of words counter
@@ -213,37 +217,51 @@ twelvePlusTotal=0.0
 
 
 #8160 total probs,1632
-#science: q=10.0,ir=0.02,text=1/1500,bi=0.00075,tri=0.00001,ias=2,nias=-1,top 3 ans, 0.66341
+#science: q=10.0,ir=0.02,text=1/1500,bi=0.00075,tri=0.00001,ias=2,nias=0,top 3 ans, 0.66341
+#q=10,ir=1.2,bi=0.6,text=1/20,ias=2,top=1,62.43
 #1055 probs,211 tested
 
-#lit: q=10,ir=1.2,text=1/5000,bi=0.02,tri=0.001,ias=0,nias=0,top 1 ans, 0.77388
+#lit: q=10,ir=1.2,text=1/20,bi=0.6,tri=0.001,ias=1,nias=0,top 1 ans, 0.78821
 #3097 probs,620 tested
 
-#history q=10.0,ir=1.2,bi=0.02,text=1/2000,tri=0.0001,else=0,top 1 ans, 0.86666
+#history q=10.0,ir=1.2,bi=0.4,text=1/5,tri=0.001,ias=1,nias=0,top 1 ans, 0.87111
 #2379 probs,476
 
 #social: q=10,ir=0.02,text=1/1500,bi=0.03,tri=0.0001,ias=2,nias=-1,top 2 ans, 0.62068
 #1629 probs,325 tested
 
+# qWeight=10.0
+
+# irWeight=0.02
+
+# biWeight=0.6
+
+# textWeight=1.0/25.0
+
+# triWeight=0.001
+
+# inCorrectAnswerSet=2
+# notInCorrectAnswerSet=0
+
 qWeight=10.0
 
-irWeight=1.2
+irWeight=0.02
 
-biWeight=0.02
+biWeight=0.0075
 
-textWeight=1.0/2000.0
+textWeight=1.0/500.0
 
-triWeight=0.001
+triWeight=0.00001
 
-inCorrectAnswerSet=0
+inCorrectAnswerSet=2
 notInCorrectAnswerSet=0
 
-topAnswers=1
+topAnswers=3
 
 for ii in train3:
 	# print ii['Question ID']
 	if int(ii['Question ID'])%5==0:
-		if ii['category']=='history':
+		if ii['category']=='science':
 			totalQuestions+=1
 			qScore=0.0
 			irScore=0.0
@@ -315,7 +333,8 @@ for ii in train3:
 					if stem==None:
 						1
 					else:
-						textScore+=text[stem][answer]
+						if kk not in stop:
+							textScore+=text[stem][answer]
 						# print 'HAHAHAHAAHAHHAHAHAAH'
 
 				# for word in re.split('\W+',ii['Question Text'].lower()):

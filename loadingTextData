@@ -1,0 +1,10 @@
+from csv import DictReader, DictWriter
+from collections import defaultdict
+
+
+train = DictReader(open("predScienceText.csv", 'r'))
+textData=defaultdict()
+for ii in train:
+		# correctAnswerSet.add(ii['Answer'])
+	textData[ii['Question ID']]=ii['Answer']
+	print ii
