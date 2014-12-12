@@ -37,7 +37,7 @@ featuresInTestSet=[]
 test1 = DictReader(open("test.csv", 'r'))
 for ii in test1:
 	# if int(ii['Question ID'])%5!=0:
-	if ii['category']=='science':
+	if ii['category']=='lit':
 		#Split on everything that isn't alpha-numeric
 		words=re.split('\W+',ii['Question Text'].lower())
 
@@ -61,7 +61,7 @@ featureIR = defaultdict(lambda: defaultdict(int))
 #New features can be inserted and trained in this loop
 for ii in train:
 	# if int(ii['Question ID'])%5!=0:
-	if ii['category']=='science':
+	if ii['category']=='lit':
 		#Split on everything that isn't alpha-numeric
 		words=re.split('\W+',ii['Question Text'].lower())
 
@@ -83,12 +83,12 @@ totalQuestions=0
 totalQuestions2=0
 for ii in train:
 	if (int(ii['Question ID'])%2-1)==0:
-		if ii['category']=='science':
+		if ii['category']=='lit':
 			totalQuestions2+=1
 
-	if int(ii['Question ID'])%2==0:
-		if ii['category']=='science':
-			totalQuestions+=1
+	# if int(ii['Question ID'])%2==0:
+	if ii['category']=='lit':
+		totalQuestions+=1
 
 
 #Question ID, Question Text, QANTA Scores, Answer, Sentence Position, IR_Wiki Scores, category
@@ -99,7 +99,7 @@ print "LOADING INTO RAM"
 train = DictReader(open("train.csv", 'r'))
 allData=defaultdict()
 for ii in train:
-	if ii['category']=='science':
+	if ii['category']=='lit':
 		correctAnswerSet.add(ii['Answer'])
 		allData[ii['Question ID'],ii['Sentence Position']]=[ii['Question Text'],ii['QANTA Scores'],ii['IR_Wiki Scores'],ii['Answer'],ii['category']]
 	# print allData[ii['Question ID'],ii['Sentence Position']][4]
@@ -133,32 +133,32 @@ count=0
 for jj in range(0,1):
 	for ii in allData:
 		count+=1
-		if (int(ii[0])%2)==0:
-			# if allData[ii][4]=='science':
-			print count
+		# if (int(ii[0])%2)==0:
+			# if allData[ii][4]=='lit':
+		print count
 
 
-			words=re.split('\W+',allData[ii][0].lower())
+		words=re.split('\W+',allData[ii][0].lower())
 
-			for answer in correctAnswerSet:
+		for answer in correctAnswerSet:
 
-				##Adding single word features
-				for feature in featureWeightsText:  ##dict containing all features and their current weights
-					# equationDict[ii][answer][feature]=0.0
-					for word in words:
-						if word==feature:
-							if featureText[word][answer]>0:
-								equationDict[ii][answer][feature]=0
+			##Adding single word features
+			for feature in featureWeightsText:  ##dict containing all features and their current weights
+				# equationDict[ii][answer][feature]=0.0
+				for word in words:
+					if word==feature:
+						if featureText[word][answer]>0:
+							equationDict[ii][answer][feature]=0
 
 
 
-				for feature in featureWeightsText:  ##dict containing all features and their current weights
-					# equationDict[ii][answer][feature]=0.0
-					for word in words:
-						# if word not in stop:  ##remove stop words
-						if word==feature:
-							if featureText[word][answer]>0:
-								equationDict[ii][answer][feature]+=1.0/featureText[word][answer]
+			for feature in featureWeightsText:  ##dict containing all features and their current weights
+				# equationDict[ii][answer][feature]=0.0
+				for word in words:
+					# if word not in stop:  ##remove stop words
+					if word==feature:
+						if featureText[word][answer]>0:
+							equationDict[ii][answer][feature]+=1.0/featureText[word][answer]
 
 
 
@@ -173,7 +173,7 @@ listRange=[]
 for i in range(0,11):
 	listRange.append(float(i)/10.0)
 ############### "TRAIN" again trying different weights################
-for jj in range(0,1):
+for jj in range(0,3):
 	for feat in featureWeights:
 		if mostCorrect==totalQuestions:
 			break
@@ -181,30 +181,30 @@ for jj in range(0,1):
 			cCorrect=0
 			featureWeights[feat][0]=weight
 			for ii in allData:
-				if (int(ii[0])%2)==0:
-					# if allData[ii][4]=='science':
-					totalScore={}
-					answersUsedSoFar=Set()
-					# words=re.split('\W+',allData[ii][0].lower())
-					for answer in equationDict[ii]:
-						# if answer[0] not in answersUsedSoFar:
-						totalScore[answer]=0
+				# if (int(ii[0])%2)==0:
+					# if allData[ii][4]=='lit':
+				totalScore={}
+				answersUsedSoFar=Set()
+				# words=re.split('\W+',allData[ii][0].lower())
+				for answer in equationDict[ii]:
+					# if answer[0] not in answersUsedSoFar:
+					totalScore[answer]=0
 
-						for feature in equationDict[ii][answer]:
-							totalScore[answer]+=equationDict[ii][answer][feature]*featureWeights[feature][0]
-							# print 
-							# print totalScore[answer[0]],equationDict[ii][answer][feature],featureWeights[feature][0]
+					for feature in equationDict[ii][answer]:
+						totalScore[answer]+=equationDict[ii][answer][feature]*featureWeights[feature][0]
+						# print 
+						# print totalScore[answer[0]],equationDict[ii][answer][feature],featureWeights[feature][0]
 
-						# answersUsedSoFar.add(answer[0])  #Avoid redoing answers found in IR and QANTA
+					# answersUsedSoFar.add(answer[0])  #Avoid redoing answers found in IR and QANTA
 
 
-					pickedAnswer=maxScore(totalScore)
+				pickedAnswer=maxScore(totalScore)
 
-					# print "Picked Answer = ",pickedAnswer,"Real Answer = ",allData[ii][3]
+				# print "Picked Answer = ",pickedAnswer,"Real Answer = ",allData[ii][3]
 
-					# totalScoreList[ii]=pickedAnswer
-					if pickedAnswer==allData[ii][3]:
-						cCorrect+=1
+				# totalScoreList[ii]=pickedAnswer
+				if pickedAnswer==allData[ii][3]:
+					cCorrect+=1
 
 			
 			if mostCorrect<cCorrect:
@@ -225,7 +225,7 @@ testFile = DictReader(open("test.csv", 'r'))
 test=defaultdict(list)
 
 for ii in testFile:
-	if ii['category']=='science':
+	if ii['category']=='lit':
 		totalScore={}
 
 		words=re.split('\W+',ii['Question Text'].lower())
@@ -247,7 +247,7 @@ for ii in testFile:
 
 
 # Write predictions
-o = DictWriter(open('predScienceText2.csv', 'wb'), ['Question ID', 'Answer'])
+o = DictWriter(open('predLitText2.csv', 'wb'), ['Question ID', 'Answer'])
 o.writeheader()
 for ii in sorted(test):
     o.writerow({'Question ID': ii, 'Answer': test[ii]})
