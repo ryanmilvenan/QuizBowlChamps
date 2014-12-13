@@ -34,15 +34,15 @@ IR={}
 words=[]
 featuresInTestSet=[]
 
-test1 = DictReader(open("test.csv", 'r'))
+test1 = DictReader(open("train.csv", 'r'))
 for ii in test1:
-	# if int(ii['Question ID'])%5!=0:
-	if ii['category']=='science':
-		#Split on everything that isn't alpha-numeric
-		words=re.split('\W+',ii['Question Text'].lower())
+	if int(ii['Question ID'])%5==0:
+		if ii['category']=='science':
+			#Split on everything that isn't alpha-numeric
+			words=re.split('\W+',ii['Question Text'].lower())
 
-		for kk in words:
-			featuresInTestSet.append(kk)
+			for kk in words:
+				featuresInTestSet.append(kk)
 
 # print featuresInTestSet
 # print len(featuresInTestSet)
@@ -82,11 +82,11 @@ train = DictReader(open("train.csv", 'r'))
 totalQuestions=0
 totalQuestions2=0
 for ii in train:
-	if (int(ii['Question ID'])%2-1)==0:
+	if int(ii['Question ID'])%5==0:
 		if ii['category']=='science':
 			totalQuestions2+=1
 
-	if int(ii['Question ID'])%2==0:
+	if int(ii['Question ID'])%5!=0:
 		if ii['category']=='science':
 			totalQuestions+=1
 
@@ -119,6 +119,35 @@ for feature in featureText:
 		# print "Accuracy with",feature," = ", float(cCorrect)/float(totalQuestions),float(cCorrect)
 
 
+######USE ON TEST DATA#########################
+train3 = DictReader(open("train.csv", 'r'))
+cCorrect=0
+for ii in allData:
+	if allData[ii][4]=='science':
+		if int(ii[0])%5==0:
+			totalScore={}
+
+			words=re.split('\W+',allData[ii][0].lower())
+
+			for answer in correctAnswerSet:
+				totalScore[answer]=0
+
+				for feature in featureWeightsText:
+					for word in words:
+						if word==feature:
+							if featureText[word][answer]>0:
+								totalScore[answer]+=1.0/featureText[word][answer]*featureWeightsText[feature][0]
+
+
+			pickedAnswer=maxScore(totalScore)
+			if pickedAnswer==allData[ii][3]:
+				cCorrect+=1
+
+print "accuracy without updates weights = ",float(cCorrect)/float(totalQuestions2)
+equalWeightAccuray=float(cCorrect)/float(totalQuestions2)
+# print cCorrect,totalQuestions2
+
+
 
 ####CALCULATE EQUATION USING INITIAL FEATURES
 
@@ -133,32 +162,32 @@ count=0
 for jj in range(0,1):
 	for ii in allData:
 		count+=1
-		if (int(ii[0])%2)==0:
+		# if (int(ii[0])%2)==0:
 			# if allData[ii][4]=='science':
-			print count
+		print count
 
 
-			words=re.split('\W+',allData[ii][0].lower())
+		words=re.split('\W+',allData[ii][0].lower())
 
-			for answer in correctAnswerSet:
+		for answer in correctAnswerSet:
 
-				##Adding single word features
-				for feature in featureWeightsText:  ##dict containing all features and their current weights
-					# equationDict[ii][answer][feature]=0.0
-					for word in words:
-						if word==feature:
-							if featureText[word][answer]>0:
-								equationDict[ii][answer][feature]=0
+			##Adding single word features
+			for feature in featureWeightsText:  ##dict containing all features and their current weights
+				# equationDict[ii][answer][feature]=0.0
+				for word in words:
+					if word==feature:
+						if featureText[word][answer]>0:
+							equationDict[ii][answer][feature]=0
 
 
 
-				for feature in featureWeightsText:  ##dict containing all features and their current weights
-					# equationDict[ii][answer][feature]=0.0
-					for word in words:
-						# if word not in stop:  ##remove stop words
-						if word==feature:
-							if featureText[word][answer]>0:
-								equationDict[ii][answer][feature]+=1.0/featureText[word][answer]
+			for feature in featureWeightsText:  ##dict containing all features and their current weights
+				# equationDict[ii][answer][feature]=0.0
+				for word in words:
+					# if word not in stop:  ##remove stop words
+					if word==feature:
+						if featureText[word][answer]>0:
+							equationDict[ii][answer][feature]+=1.0/featureText[word][answer]
 
 
 
@@ -170,7 +199,7 @@ print "MADE IT TO WEIGHT SELECTION"
 
 mostCorrect=0
 listRange=[]
-for i in range(0,11):
+for i in range(0,4):
 	listRange.append(float(i)/10.0)
 ############### "TRAIN" again trying different weights################
 for jj in range(0,1):
@@ -181,7 +210,7 @@ for jj in range(0,1):
 			cCorrect=0
 			featureWeights[feat][0]=weight
 			for ii in allData:
-				if (int(ii[0])%2)==0:
+				if (int(ii[0])%5)!=0:
 					# if allData[ii][4]=='science':
 					totalScore={}
 					answersUsedSoFar=Set()
@@ -213,13 +242,44 @@ for jj in range(0,1):
 				print "Accuracy = ", float(cCorrect)/float(totalQuestions),feat,featureWeights[feat][1],"Iteration = ",jj
 
 		featureWeights[feat][0]=featureWeights[feat][1] #update feature weight to best so far
-	print "Accuracy = ", float(cCorrect)/float(totalQuestions),"Iteration = ",jj
+	print "Accuracy on train = ", float(mostCorrect)/float(totalQuestions),"Iteration = ",jj
 
-print "Final Accuracy On Dev = ", float(cCorrect)/float(totalQuestions)
+
+
 #####################TESTING ON DEV####################################
 cCorrect=0
+trainAnswers=defaultdict(list)
 # equationDict=defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
+for ii in allData:
+	if (int(ii[0])%5)==0:
+		totalScore={}
 
+		for answer in equationDict[ii]:
+			totalScore[answer]=0
+
+			for feature in equationDict[ii][answer]:
+				totalScore[answer]+=equationDict[ii][answer][feature]*featureWeights[feature][0]
+
+		pickedAnswer=maxScore(totalScore)
+		if pickedAnswer==allData[ii][3]:
+			cCorrect+=1
+		for qq in range(0,11):
+			pickedAnswer=maxScore(totalScore)
+			trainAnswers[ii[0]].append((pickedAnswer,totalScore[pickedAnswer]))
+			totalScore[pickedAnswer]=-1
+
+print "Accuracy before weight selection on dev = ",equalWeightAccuray
+print "Accuracy On Dev after weight selection = ", float(cCorrect)/float(totalQuestions2)
+
+# Write training predictions
+o = DictWriter(open('predScienceTextTrain.csv', 'wb'), ['Question ID', 'Answer'])
+o.writeheader()
+for ii in sorted(trainAnswers):
+    o.writerow({'Question ID': ii, 'Answer': trainAnswers[ii]})
+
+
+
+cCorrect=0
 ######USE ON TEST DATA#########################
 testFile = DictReader(open("test.csv", 'r'))
 test=defaultdict(list)
@@ -247,7 +307,7 @@ for ii in testFile:
 
 
 # Write predictions
-o = DictWriter(open('predScienceText2.csv', 'wb'), ['Question ID', 'Answer'])
+o = DictWriter(open('predScienceText.csv', 'wb'), ['Question ID', 'Answer'])
 o.writeheader()
 for ii in sorted(test):
     o.writerow({'Question ID': ii, 'Answer': test[ii]})
