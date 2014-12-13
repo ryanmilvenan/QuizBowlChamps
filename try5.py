@@ -108,7 +108,7 @@ for cat in categories:
 	if cat=='science':
 		qWeight=10.0
 		irWeight=0.02
-		textWeight=20.0
+		textWeight=60.0
 		biWeight=0.00075
 		triWeight=0.00001
 		inCorrectAnswerSet=2
@@ -135,7 +135,7 @@ for cat in categories:
 	if cat=='social':
 		qWeight=10.0
 		irWeight=0.02
-		textWeight=20.0
+		textWeight=60.0
 		biWeight=0.03
 		triWeight=0.0001
 		inCorrectAnswerSet=2
@@ -206,7 +206,7 @@ for cat in categories:
 
 				#Get text score
 				if (ii['category']=='science') or (ii['category']=='social'):
-					print ii['Question ID'],answer,predAnswers[ii['Question ID']][answer]
+					# print ii['Question ID'],answer,predAnswers[ii['Question ID']][answer]
 
 					if predAnswers[ii['Question ID']][answer]>0:
 						# print "TextScore=",predAnswers[int(ii[0])][answer]
@@ -240,7 +240,7 @@ for cat in categories:
 			test[ii['Question ID']]=maxScore(totalScoreList)
 
 # Write predictions
-o = DictWriter(open('pred1.csv', 'wb'), ['Question ID', 'Answer'])
+o = DictWriter(open('pred4.csv', 'wb'), ['Question ID', 'Answer'])
 o.writeheader()
 for ii in sorted(test):
     o.writerow({'Question ID': ii, 'Answer': test[ii]})
