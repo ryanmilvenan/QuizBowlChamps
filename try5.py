@@ -5,7 +5,7 @@ from collections import defaultdict
 from collections import Counter
 from csv import DictReader, DictWriter
 from sets import Set
-
+import ast
 import re
 import nltk
 from nltk.corpus import wordnet as wn
@@ -21,6 +21,34 @@ def maxScore(d):
 	k=list(d.keys())
 	return k[v.index(max(v))]
 
+predAnswers = defaultdict(lambda: defaultdict(float)) #of words
+pred = DictReader(open("predScienceText3.csv", 'r'))
+for ii in pred:
+	answers=ast.literal_eval(ii['Answer'])
+	qid=ast.literal_eval(ii['Question ID'])
+	for kk in answers:
+		predAnswers[str(qid)][str(kk[0])]=float(kk[1])
+
+pred = DictReader(open("predSocialText3.csv", 'r'))
+for ii in pred:
+	answers=ast.literal_eval(ii['Answer'])
+	qid=ast.literal_eval(ii['Question ID'])
+	for kk in answers:
+		predAnswers[str(qid)][str(kk[0])]=float(kk[1])
+
+# pred = DictReader(open("predHistoryText2.csv", 'r'))
+# for ii in pred:
+# 	answers=ast.literal_eval(ii['Answer'])
+# 	qid=ast.literal_eval(ii['Question ID'])
+# 	for kk in answers:
+# 		predAnswers[qid][kk[0]]=float(kk[1])
+
+# pred = DictReader(open("predLitText2.csv", 'r'))
+# for ii in pred:
+# 	answers=ast.literal_eval(ii['Answer'])
+# 	qid=ast.literal_eval(ii['Question ID'])
+# 	for kk in answers:
+# 		predAnswers[qid][kk[0]]=float(kk[1])
 ########### PART 1 : Training #########################
 #Fields:
 #Question ID, Question Text, QANTA Scores, Answer, Sentence Position, IR_Wiki Scores, category
@@ -77,80 +105,42 @@ for cat in categories:
 	totalScoreList={}
 	#Dictionary to store question id and associated answer
 
-	# if cat=='science':
-	# 	qWeight=10.0
-	# 	irWeight=0.02
-	# 	textWeight=1.0/1500.0
-	# 	biWeight=0.00075
-	# 	triWeight=0.00001
-	# 	inCorrectAnswerSet=2
-	# 	notInCorrectAnswerSet=-1
-	# 	topAnswers=3
-	# if cat=='lit':
-	# 	qWeight=10.0
-	# 	irWeight=1.2
-	# 	textWeight=1.0/5000.0
-	# 	biWeight=0.02
-	# 	triWeight=0.001
-	# 	inCorrectAnswerSet=0
-	# 	notInCorrectAnswerSet=0
-	# 	topAnswers=1
-	# if cat=='history':
-	# 	qWeight=10.0
-	# 	irWeight=1.2
-	# 	textWeight=1.0/2000.0
-	# 	biWeight=0.02
-	# 	triWeight=0.0001
-	# 	inCorrectAnswerSet=0
-	# 	notInCorrectAnswerSet=0
-	# 	topAnswers=1
-	# if cat=='social':
-	# 	qWeight=10.0
-	# 	irWeight=0.02
-	# 	textWeight=1.0/1500.0
-	# 	biWeight=0.03
-	# 	triWeight=0.0001
-	# 	inCorrectAnswerSet=2
-	# 	notInCorrectAnswerSet=-1
-	# 	topAnswers=2
 	if cat=='science':
-		qWeight=0.0
-		irWeight=0.0
-		textWeight=1.0
-		biWeight=0.0
-		triWeight=0.0
-		inCorrectAnswerSet=0.0
-		notInCorrectAnswerSet=0.0
-		topAnswers=5
+		qWeight=10.0
+		irWeight=0.02
+		textWeight=20.0
+		biWeight=0.00075
+		triWeight=0.00001
+		inCorrectAnswerSet=2
+		notInCorrectAnswerSet=-1
+		topAnswers=3
 	if cat=='lit':
-		qWeight=0.0
-		irWeight=0.0
-		textWeight=1.0
-		biWeight=0.0
-		triWeight=0.0
-		inCorrectAnswerSet=0.0
-		notInCorrectAnswerSet=0.0
-		topAnswers=5
+		qWeight=10.0
+		irWeight=1.2
+		textWeight=1.0/5000.0
+		biWeight=0.02
+		triWeight=0.001
+		inCorrectAnswerSet=0
+		notInCorrectAnswerSet=0
+		topAnswers=1
 	if cat=='history':
-		qWeight=0.0
-		irWeight=0.0
-		textWeight=1.0
-		biWeight=0.0
-		triWeight=0.0
-		inCorrectAnswerSet=0.0
-		notInCorrectAnswerSet=0.0
-		topAnswers=5
+		qWeight=10.0
+		irWeight=1.2
+		textWeight=1.0/2000.0
+		biWeight=0.02
+		triWeight=0.0001
+		inCorrectAnswerSet=0
+		notInCorrectAnswerSet=0
+		topAnswers=1
 	if cat=='social':
-		qWeight=0.0
-		irWeight=0.0
-		textWeight=1.0
-		biWeight=0.0
-		triWeight=0.0
-		inCorrectAnswerSet=0.0
-		notInCorrectAnswerSet=0.0
-		topAnswers=5
-
-
+		qWeight=10.0
+		irWeight=0.02
+		textWeight=20.0
+		biWeight=0.03
+		triWeight=0.0001
+		inCorrectAnswerSet=2
+		notInCorrectAnswerSet=-1
+		topAnswers=2
 
 
 	for ii in testFile:
@@ -215,8 +205,17 @@ for cat in categories:
 					irScore=0.0
 
 				#Get text score
-				for word in re.split('\W+',ii['Question Text'].lower()):
-					textScore+=text[word][answer]
+				if (ii['category']=='science') or (ii['category']=='social'):
+					print ii['Question ID'],answer,predAnswers[ii['Question ID']][answer]
+
+					if predAnswers[ii['Question ID']][answer]>0:
+						# print "TextScore=",predAnswers[int(ii[0])][answer]
+						textScore=predAnswers[ii['Question Text']][answer]
+					else:
+						textScore=0.0
+				else:
+					for word in re.split('\W+',ii['Question Text'].lower()):
+						textScore+=text[word][answer]
 
 				#Get bigrams score
 				for gram in ngrams(nltk.word_tokenize(ii['Question Text'].lower()),2):

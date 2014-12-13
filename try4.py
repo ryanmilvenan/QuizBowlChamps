@@ -44,6 +44,45 @@ for ii in test1:
 			for kk in words:
 				featuresInTestSet.append(kk)
 
+			Q=[]
+			I=[]
+			counter=0 #This is used in case the first item has a comma before a :
+			#for example 'charles,_evans_hughes:5.03163689658' would mess up without it
+
+			#BUNCH OF DATA PROCESSING!
+			Q3=ii['QANTA Scores']
+			Q2=re.split(':',Q3)
+			for item in Q2:
+				if counter>0:
+					Q1=re.split(',',item,1) #split on first comma only!
+					for ele in Q1:
+						Q.append(re.sub(' ','',ele))
+				else:
+					Q.append(item)
+				counter=1
+			counter=0
+			# print Q
+			I3=ii['IR_Wiki Scores']
+			I2=re.split(':',I3)
+			for item in I2:
+				if counter>0:
+					I1=re.split(',',item,1) #split on first comma only!
+					for ele in I1:
+						I.append(re.sub(' ','',ele))
+				else:
+					I.append(item)
+				counter=1
+
+			
+			for kk in range(0,20):
+				QANTA[Q[kk*2]]=Q[kk*2+1]
+				IR[I[kk*2]]=I[kk*2+1]
+
+			#Use top 5 scores
+			for kk in range(0,1):
+				correctAnswerSet.add(Q[kk*2])
+				correctAnswerSet.add(I[kk*2])
+
 # print featuresInTestSet
 # print len(featuresInTestSet)
 
@@ -60,15 +99,15 @@ featureIR = defaultdict(lambda: defaultdict(int))
 
 #New features can be inserted and trained in this loop
 for ii in train:
-	# if int(ii['Question ID'])%5!=0:
-	if ii['category']=='science':
-		#Split on everything that isn't alpha-numeric
-		words=re.split('\W+',ii['Question Text'].lower())
+	if int(ii['Question ID'])%5==0:
+		if ii['category']=='science':
+			#Split on everything that isn't alpha-numeric
+			words=re.split('\W+',ii['Question Text'].lower())
 
-		for kk in words:
-			if kk in featuresInTestSet:
-				featureText[kk][ii['Answer']]+=1
-				# print kk
+			for kk in words:
+				if kk in featuresInTestSet:
+					featureText[kk][ii['Answer']]+=1
+					# print kk
 
 
 
@@ -100,8 +139,9 @@ train = DictReader(open("train.csv", 'r'))
 allData=defaultdict()
 for ii in train:
 	if ii['category']=='science':
-		correctAnswerSet.add(ii['Answer'])
 		allData[ii['Question ID'],ii['Sentence Position']]=[ii['Question Text'],ii['QANTA Scores'],ii['IR_Wiki Scores'],ii['Answer'],ii['category']]
+		if int(ii['Question ID'])%5!=0:
+			correctAnswerSet.add(ii['Answer'])
 	# print allData[ii['Question ID'],ii['Sentence Position']][4]
 
 ##0=QText,1=Qscore,2=IRscore,3=Answer,4=cat
@@ -277,12 +317,11 @@ o.writeheader()
 for ii in sorted(trainAnswers):
     o.writerow({'Question ID': ii, 'Answer': trainAnswers[ii]})
 
-
-
 cCorrect=0
 ######USE ON TEST DATA#########################
 testFile = DictReader(open("test.csv", 'r'))
 test=defaultdict(list)
+
 
 for ii in testFile:
 	if ii['category']=='science':
@@ -291,7 +330,7 @@ for ii in testFile:
 		words=re.split('\W+',ii['Question Text'].lower())
 
 		for answer in correctAnswerSet:
-			totalScore[answer]=0
+			totalScore[answer]=0.0
 
 			for feature in featureWeightsText:
 				for word in words:

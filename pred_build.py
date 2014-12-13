@@ -11,7 +11,7 @@ def build_pred(file_index):
 	for file in os.listdir("./"):
 		if file.endswith(".csv") and has_file_index.search(file) and (len(file) > 9):
 			pred_files.append(file)
-	
+	print pred_files
 	pred_dicts = []
 	for file in pred_files:
 		pred_dict = DictReader(open(file, 'r'))
@@ -23,8 +23,7 @@ def build_pred(file_index):
 			answer_list = row['Answer']
 			answer_list = ast.literal_eval(answer_list)
 			answer = answer_list[0]
-			answer = answer[0]
-			combined_dict[row['Question ID']] = answer 
+			combined_dict[row['Question ID']] = answer_list[1]
 
 	o = DictWriter(open('pred'+str(file_index)+'.csv', 'wb'), ['Question ID', 'Answer'])
 	o.writeheader()
