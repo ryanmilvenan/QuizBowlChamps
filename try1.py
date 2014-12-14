@@ -28,18 +28,63 @@ def maxScore(d):
 	k=list(d.keys())
 	return k[v.index(max(v))]
 
-# predAnswers={}
+
 predAnswers = defaultdict(lambda: defaultdict(float)) #of words
-pred = DictReader(open("predScienceTextTrain.csv", 'r'))
+predBigramAnswers = defaultdict(lambda: defaultdict(float)) #of bigrams
+
+# pred = DictReader(open("predSocialText3.csv", 'r'))
+# for ii in pred:
+# 	answers=ast.literal_eval(ii['Answer'])
+# 	qid=ast.literal_eval(ii['Question ID'])
+# 	# print qid,answers[0][0],answers[0][1]
+# 	for kk in answers:
+# 		# print kk
+# 		predAnswers[qid][kk[0]]=float(kk[1])
+
+# pred = DictReader(open("predSocialBigrams3.csv", 'r'))
+# for ii in pred:
+# 	answers=ast.literal_eval(ii['Answer'])
+# 	qid=ast.literal_eval(ii['Question ID'])
+# 	# print qid,answers[0][0],answers[0][1]
+# 	for kk in answers:
+# 		# print kk
+# 		predBigramAnswers[qid][kk[0]]=float(kk[1])
+
+# pred = DictReader(open("predScienceTextTrain.csv", 'r'))
+# for ii in pred:
+# 	answers=ast.literal_eval(ii['Answer'])
+# 	qid=ast.literal_eval(ii['Question ID'])
+# 	# print qid,answers[0][0],answers[0][1]
+# 	for kk in answers:
+# 		# print kk
+# 		predAnswers[qid][kk[0]]=float(kk[1])
+
+# pred = DictReader(open("predScienceBigrams.csv", 'r'))
+# for ii in pred:
+# 	answers=ast.literal_eval(ii['Answer'])
+# 	qid=ast.literal_eval(ii['Question ID'])
+# 	# print qid,answers[0][0],answers[0][1]
+# 	for kk in answers:
+# 		# print kk
+# 		predBigramAnswers[qid][kk[0]]=float(kk[1])
+
+pred = DictReader(open("predHistoryTextTrain1.csv", 'r'))
+for ii in pred:
+	answers=ast.literal_eval(ii['Answer'])
+	qid=ast.literal_eval(ii['Question ID'])
+	# print qid,answers[0][0],answers[0][1]
+	for kk in answers:
+		predAnswers[qid][kk[0]]=float(kk[1])
+
+pred = DictReader(open("predHistoryBigrams3.csv", 'r'))
 for ii in pred:
 	answers=ast.literal_eval(ii['Answer'])
 	qid=ast.literal_eval(ii['Question ID'])
 	# print qid,answers[0][0],answers[0][1]
 	for kk in answers:
 		# print kk
-		predAnswers[qid][kk[0]]=float(kk[1])
-	# predAnswers[qid]=answers[0][0]
-	# print answers[1]
+		predBigramAnswers[qid][kk[0]]=float(kk[1])
+
 
 
 ################################################################
@@ -142,7 +187,7 @@ fdist=FreqDist()
 train2 = DictReader(open("train.csv", 'r'))
 allData=defaultdict()
 for ii in train2:
-	if ii['category']=='science':
+	if ii['category']=='lit':
 		# correctAnswerSet.add(ii['Answer'])
 		allData[ii['Question ID'],ii['Sentence Position']]=[ii['Question Text'],ii['QANTA Scores'],ii['IR_Wiki Scores'],ii['Answer'],ii['category']]
 
@@ -175,19 +220,19 @@ for ii in allData:
 	# 	break
 	# correctAnswerSet.add(ii['Answer'])
 	if int(ii[0])%5!=0:
-		if (allData[ii][4]=='science'):
+		if (allData[ii][4]=='lit'):
 			correctAnswerSet.add(allData[ii][3])
 			# word counter
 			#Split on everything that isn't alpha-numeric
-			# words=re.split('\W+',allData[ii][0].lower())
-			# for kk in words:
-			# 	if kk not in stop:
-			# 		stem = wn.morphy(kk)
-			# 		if stem==None:
-			# 			1
-			# 		else:
-			# 			if kk not in stop:
-			# 				text[stem][allData[ii][3]]+=1
+			words=re.split('\W+',allData[ii][0].lower())
+			for kk in words:
+				if kk not in stop:
+					stem = wn.morphy(kk)
+					if stem==None:
+						1
+					else:
+						if kk not in stop:
+							text[stem][allData[ii][3]]+=1
 
 
 			# bigrams of words counter
@@ -251,15 +296,16 @@ twelvePlusTotal=0.0
 
 
 #8160 total probs,1632
-#science: q=10.0,ir=0.02,text=1/1500,bi=0.00075,tri=0.00001,ias=2,nias=0,top 3 ans, 0.66341
-#q=10,ir=1.2,bi=0.6,text=1/20,ias=2,top=1,62.43
+# science:
+#q=10,ir=0.02,bi=250,text=40,ias=2,top=5,80ish
 #1055 probs,211 tested
 
 #lit: q=10,ir=1.2,text=1/20,bi=0.6,tri=0.001,ias=1,nias=0,top 1 ans, 0.78821
 #3097 probs,620 tested
 
-#history q=10.0,ir=1.2,bi=0.4,text=1/5,tri=0.001,ias=1,nias=0,top 1 ans, 0.87111
+#history 
 #2379 probs,476
+#q=10.0,ir=1.2,bi=0.4,text=100,bi=5,tri=0.001,ias=1,top 4 ans,0.90444444
 
 #social: q=10,ir=0.02,text=1/1500,bi=0.03,tri=0.0001,ias=2,nias=-1,top 2 ans, 0.62068
 #1629 probs,325 tested
@@ -279,24 +325,24 @@ twelvePlusTotal=0.0
 
 qWeight=10.0
 
-irWeight=0.02
+irWeight=1.2
 
-biWeight=0.0075
+biWeight=0
 
 # textWeight=1.0/500.0
-textWeight=100
+textWeight=345250
 
-triWeight=0.00001
+triWeight=0.001
 
-inCorrectAnswerSet=2
+inCorrectAnswerSet=1
 notInCorrectAnswerSet=0
 
-topAnswers=3
+topAnswers=4
 
 for ii in allData:
 	# print ii['Question ID']
 	if int(ii[0])%5==0:
-		if allData[ii][4]=='science':
+		if allData[ii][4]=='lit':
 			totalQuestions+=1
 			qScore=0.0
 			irScore=0.0
@@ -342,7 +388,8 @@ for ii in allData:
 				answerSet.add(I[kk*2])
 			# for kk in correctAnswerSet:
 			# 	answerSet.add(kk)
-				
+			# for kk in correctAnswerSet:
+			# 	answerSet.add(kk)
 
 			for answer in answerSet:
 				# print answer
@@ -360,7 +407,7 @@ for ii in allData:
 				except KeyError:
 					irScore=0.0
 
-				#Get text score
+				# #Get text score
 				# words=re.split('\W+',allData[ii][0].lower())
 				# for kk in words:
 				# 	if kk not in stop:
@@ -374,27 +421,21 @@ for ii in allData:
 
 
 
-				# for word in re.split('\W+',ii['Question Text'].lower()):
-				# 	stem = wn.morphy(word)
-				# 	print stem
-    # 				if stem!='None':
-    # 					print 'HAHAHAAHAHAHAAHAHAHAAHAHAHAAHAHAHAA'
-    # 				else:
-				# 		textScore+=text[stem][answer]
-				# 		print "MADE IT MADE IT MADE IT MADE IT MADE IT"
-					# textScore+=text[word][answer]
-
 				if predAnswers[int(ii[0])][answer]>0:
 					# print "TextScore=",predAnswers[int(ii[0])][answer]
 					textScore=predAnswers[int(ii[0])][answer]
 				else:
 					textScore=0.0
 
-				# textScore+=float(predAnswers[int(ii[0][1])])
+				if predAnswers[int(ii[0])][answer]>0:
+					# print "TextScore=",predAnswers[int(ii[0])][answer]
+					biScore=predAnswers[int(ii[0])][answer]
+				else:
+					biScore=0.0
 
-				#Get bigrams score
-				for gram in ngrams(nltk.word_tokenize(allData[ii][0].lower()),2):
-					biScore+=bigrams[gram][answer]
+				# # Get bigrams score
+				# for gram in ngrams(nltk.word_tokenize(allData[ii][0].lower()),2):
+				# 	biScore+=bigrams[gram][answer]
 
 				#Get trigrams score
 				for gram in ngrams(allData[ii][0].lower(),3):

@@ -146,7 +146,7 @@ for cat in categories:
 		triWeight=0.00001
 		inCorrectAnswerSet=1
 		notInCorrectAnswerSet=0
-		topAnswers=5
+		topAnswers=3
 	if cat=='lit':
 		qWeight=10.0
 		irWeight=1.2
@@ -181,7 +181,7 @@ for cat in categories:
 		triWeight=0.0001
 		inCorrectAnswerSet=1
 		notInCorrectAnswerSet=0
-		topAnswers=5
+		topAnswers=3
 
 
 	for ii in testFile:
@@ -289,7 +289,7 @@ for cat in categories:
 			test[ii['Question ID']]=maxScore(totalScoreList)
 
 # Write predictions
-o = DictWriter(open('pred5.csv', 'wb'), ['Question ID', 'Answer'])
+o = DictWriter(open('pred6.csv', 'wb'), ['Question ID', 'Answer'])
 o.writeheader()
 for ii in sorted(test):
     o.writerow({'Question ID': ii, 'Answer': test[ii]})
