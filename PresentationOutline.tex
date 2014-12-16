@@ -1,0 +1,79 @@
+\documentclass[11pt]{article}
+\begin{document}
+\begin{enumerate}
+
+\item Introduction
+	\begin{enumerate}
+		\item Which features to include
+		\item Which answers to include
+		\item How important is each feature
+		\item Summary
+	\end{enumerate}
+
+\item Contribution
+
+\item Challenges
+\begin{enumerate}
+
+	\item Time
+		\begin{enumerate}
+			\item Efficiency
+				\begin{enumerate}
+					\item Runtime
+					\item Errors
+				\end{enumerate}
+			\item Other Approaches
+		\end{enumerate}
+
+	\item Verifying the methodology
+		\begin{enumerate}
+			\item Scores in test did not correlate as well as expected
+				\begin{enumerate}
+					\item Possible overfit?
+					\item Do only test set features matter?
+				\end{enumerate}
+		\end{enumerate}
+	\end{enumerate}
+
+
+	\item Review vs total
+		\begin{enumerate}
+			\item Remarkable with no libraries
+			\item Words, IR Qanta, and Bigrams
+				\begin{enumerate}
+					\item No character Level scores
+				\end{enumerate}
+		\end{enumerate}
+
+\item Error Analysis
+	\begin{enumerate}
+		\item Naive Bayes-ish
+			\begin{enumerate}
+				\item Assuming all features same importance
+			\end{enumerate}
+		\item Statistical and Probabilistic Breakdown
+			\begin{enumerate}
+				\item IR Scores are terrible for Science and Social Categories
+			\end{enumerate}
+		\item Certain Features More important
+			\begin{enumerate}
+				\item Deciding it was important to set our own weights
+			\end{enumerate}
+		\item Weight Maximization
+			\begin{enumerate}
+				\item Hard coded weights were not sufficient, programmatically determine weights
+			\end{enumerate}
+	\end{enumerate}
+
+\item Linguistic Motivation Behind Features
+	\begin{enumerate}
+		\item Based on our previous assignment - bigrams
+	\end{enumerate}
+\item Other Approaches
+	\begin{enumerate}
+		\item SciKit
+		\item NLTK MaxEnt
+		\item WikiGrab
+	\end{enumerate}
+\end{enumerate}
+\end{document}
